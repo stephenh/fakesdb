@@ -10,6 +10,9 @@ class SelectTest extends AbstractFakeSdbTest {
   }
 
   def testCount(): Unit = {
-    domaina.selectItems("select count(*) from domaina", null)
+    val results = domaina.selectItems("select count(*) from domaina", null)
+    assertEquals(1, results.getItems.size)
+    assertEquals("Count", results.getItems.get("domaina").get(0).getName)
+    assertEquals("0", results.getItems.get("domaina").get(0).getValue)
   }
 }

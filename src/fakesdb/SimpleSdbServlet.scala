@@ -26,6 +26,7 @@ class FakeSdbServlet extends HttpServlet {
       case "DeleteAttributes" => new DeleteAttributes(data)
       case "Query" => new Query(data)
       case "QueryWithAttributes" => new QueryWithAttributes(data)
+      case "Select" => new Select(data)
       case other => error("Invalid action "+other)
     }
 
