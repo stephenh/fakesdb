@@ -51,13 +51,21 @@ abstract class WhereEval {
 }
 case class SimpleWhereEval(name: String, op: String, value: String) extends WhereEval {
   def filter(domain: Domain, items: List[Item]): List[Item] = {
-    op match {
-      case "=" => items.filter((i: Item) => i.getAttribute(name) match {
-        case Some(a) => a.getValues.exists((v: String) => v == value)
-        case None => false
-      }).toList
-      case _ => items
+    // still need between, in, every
+    val hasOne = (a: Option[Attribute], func: (String => Boolean)) => {
+      a.isDefined && a.get.getValues.find(func).isDefined
     }
+    val func: (Option[Attribute] => Boolean) = op match {
+      case "=" => hasOne(_, _ == value)
+      case "!=" => hasOne(_, _ != value)
+      case ">" => hasOne(_, _ > value)
+      case "<" => hasOne(_, _ < value)
+      case ">=" => hasOne(_, _ >= value)
+      case "<=" => hasOne(_, _ <= value)
+      case "like" => hasOne(_, _.matches(value.replaceAll("%", ".*")))
+      case "not-like" => hasOne(_, !_.matches(value.replaceAll("%", ".*")))
+    }
+    items.filter((i: Item) => func(i.getAttribute(name))).toList
   }
 }
 case class CompoundWhereEval(sp: WhereEval, op: String, rest: WhereEval) extends WhereEval {
@@ -69,7 +77,15 @@ case class CompoundWhereEval(sp: WhereEval, op: String, rest: WhereEval) extends
     }
   }
 }
-
+case class IsNullEval(name: String, isNull: Boolean) extends WhereEval {
+  def filter(domain: Domain, items: List[Item]): List[Item] = {
+    items.filter((i: Item) => if (isNull) {
+      i.getAttribute(name).isEmpty
+    } else {
+      i.getAttribute(name).isDefined
+    }).toList
+  }
+}
 // Use our own lexer because the "()" in "itemName()"
 class SelectLexical extends StdLexical {
   override def token: Parser[Token] = (
@@ -79,8 +95,8 @@ class SelectLexical extends StdLexical {
 }
 object SelectParser extends StandardTokenParsers {
   override val lexical = new SelectLexical
-  lexical.delimiters ++= List("*", ",", "=")
-  lexical.reserved ++= List("select", "from", "where", "and", "or")
+  lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=")
+  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null")
 
   def expr = (
     "select" ~ outputList ~ "from" ~ ident ~ "where" ~ where ^^ { case s ~ ol ~ fs ~ fi ~ ws ~ wc => SelectEval(ol, fi, Some(wc)) }
@@ -94,9 +110,13 @@ object SelectParser extends StandardTokenParsers {
 
   def simpleOp = "and" | "or"
 
-  def simplePredicate: Parser[WhereEval] = ident ~ op ~ stringLit ^^ { case i ~ o ~ v => SimpleWhereEval(i, o, v) }
+  def simplePredicate: Parser[WhereEval] = (
+    ident ~ "is" ~ "null" ^^ { case i ~ is ~ nul => IsNullEval(i, true) }
+    | ident ~ "is" ~ "not" ~ "null" ^^ { case i ~ is ~ no ~ nul => IsNullEval(i, false) }
+    | ident ~ op ~ stringLit ^^ { case i ~ o ~ v => SimpleWhereEval(i, o, v) }
+  )
 
-  def op: Parser[String] = "="
+  def op: Parser[String] = "=" | "!=" | ">" | "<" | ">=" | "<=" | "like" | "not" ~ "like" ^^ { case n ~ l => "not-like" }
 
   def outputList: Parser[OutputEval] = (
     "*" ^^ { case s => new AllOutput }

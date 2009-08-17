@@ -75,6 +75,82 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"))), results(0))
   }
 
+  def testWhereNotEquals(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itemb").put("a", "2", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a != '1'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itemb", List(("a", "2"))), results(0))
+  }
+
+  def testWhereGreaterThan(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itemb").put("a", "2", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a > '1'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itemb", List(("a", "2"))), results(0))
+  }
+
+  def testWhereLessThan(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itemb").put("a", "2", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a < '2'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itema", List(("a", "1"))), results(0))
+  }
+
+  def testWhereGreaterThanOrEqual(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itemb").put("a", "2", true)
+    domaina.getOrCreateItem("itemc").put("a", "3", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a >= '2'").select(data)
+    assertEquals(2, results.size)
+    assertEquals(("itemb", List(("a", "2"))), results(0))
+    assertEquals(("itemc", List(("a", "3"))), results(1))
+  }
+
+  def testWhereLessThanOrEqual(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itemb").put("a", "2", true)
+    domaina.getOrCreateItem("itemc").put("a", "3", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a <= '2'").select(data)
+    assertEquals(2, results.size)
+    assertEquals(("itema", List(("a", "1"))), results(0))
+    assertEquals(("itemb", List(("a", "2"))), results(1))
+  }
+
+  def testWhereLike(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itemb").put("a", "2", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a like '1%'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itema", List(("a", "1"))), results(0))
+  }
+
+  def testWhereNotLike(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itemb").put("a", "2", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a not like '1%'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itemb", List(("a", "2"))), results(0))
+  }
+
+  def testWhereIsNull(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itemb").put("b", "2", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a is null").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itemb", List(("b", "2"))), results(0))
+  }
+  
+  def testWhereIsNotNull(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itemb").put("b", "2", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a is not null").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itema", List(("a", "1"))), results(0))
+  }
+
   def testWhereEqualsAnd(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itema").put("b", "2", true)
