@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<ivy-module version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
+    <info organisation="bizo" module="simplesdb" status="integration"/>
+    <configurations>
+        <conf name="default"/>
+        <conf name="testing"/>
+    </configurations>
+    <dependencies>
+        <!-- need servlet api for default? currently leaking in from jetty -->
+        <dependency org="org.mortbay.jetty" name="jetty" rev="6.1.19" conf="testing->default,sources"/>
+        <dependency org="com.google.code.typica" name="typica" rev="1.5.2a" conf="testing->default,sources"/>
+        <dependency org="junit" name="junit" rev="3.8.1" conf="testing->default,sources"/>
+    </dependencies>
+</ivy-module>
