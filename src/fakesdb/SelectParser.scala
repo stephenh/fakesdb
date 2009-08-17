@@ -144,6 +144,7 @@ object SelectParser extends StandardTokenParsers {
     | ident ~ "in" ~ "(" ~ repsep(stringLit, ",") ~ ")" ^^ { case i ~ instr ~ lp ~ strs ~ rp => InEval(i, strs) }
     | "every" ~ "(" ~ ident ~ ")" ~ op ~ stringLit ^^ { case estr ~ lp ~ i ~ rp ~ o ~ v => EveryEval(i, o, v)}
     | ident ~ op ~ stringLit ^^ { case i ~ o ~ v => SimpleWhereEval(i, o, v) }
+    | "(" ~> where <~ ")"
   )
 
   def op: Parser[String] = "=" | "!=" | ">" | "<" | ">=" | "<=" | "like" | "not" ~ "like" ^^ { case n ~ l => "not-like" }
