@@ -46,7 +46,10 @@ class CountOutput extends OutputEval {
   }
 }
 
-case class WhereEval(name: String, op: String, value: String) {
+abstract class WhereEval {
+  def filter(domain: Domain, items: List[Item]): List[Item]
+}
+case class SimpleWhereEval(name: String, op: String, value: String) extends WhereEval {
   def filter(domain: Domain, items: List[Item]): List[Item] = {
     op match {
       case "=" => items.filter((i: Item) => i.getAttribute(name) match {
@@ -54,6 +57,15 @@ case class WhereEval(name: String, op: String, value: String) {
         case None => false
       }).toList
       case _ => items
+    }
+  }
+}
+case class CompoundWhereEval(sp: WhereEval, op: String, rest: WhereEval) extends WhereEval {
+  def filter(domain: Domain, items: List[Item]): List[Item] = {
+    op match {
+      case "and" => sp.filter(domain, items).toList intersect rest.filter(domain, items).toList
+      case "or" => sp.filter(domain, items).toList union rest.filter(domain, items).toList
+      case _ => error("Invalid operator "+op)
     }
   }
 }
@@ -68,7 +80,7 @@ class SelectLexical extends StdLexical {
 object SelectParser extends StandardTokenParsers {
   override val lexical = new SelectLexical
   lexical.delimiters ++= List("*", ",", "=")
-  lexical.reserved ++= List("select", "from", "where")
+  lexical.reserved ++= List("select", "from", "where", "and", "or")
 
   def expr = (
     "select" ~ outputList ~ "from" ~ ident ~ "where" ~ where ^^ { case s ~ ol ~ fs ~ fi ~ ws ~ wc => SelectEval(ol, fi, Some(wc)) }
@@ -76,8 +88,13 @@ object SelectParser extends StandardTokenParsers {
   )
 
   def where: Parser[WhereEval] = (
-    ident ~ op ~ stringLit ^^ { case i ~ o ~ v => WhereEval(i, o, v) }
+    simplePredicate ~ simpleOp ~ where ^^ { case sp ~ op ~ rp => CompoundWhereEval(sp, op, rp) }
+    | simplePredicate
   )
+
+  def simpleOp = "and" | "or"
+
+  def simplePredicate: Parser[WhereEval] = ident ~ op ~ stringLit ^^ { case i ~ o ~ v => SimpleWhereEval(i, o, v) }
 
   def op: Parser[String] = "="
 
