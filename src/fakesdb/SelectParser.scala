@@ -1,5 +1,6 @@
 package fakesdb
 
+import scala.collection.mutable.ListBuffer
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.lexical._
 
@@ -26,7 +27,7 @@ case class CompoundOutput(attrNames: List[String]) extends OutputEval {
   def what(domain: Domain, items: List[Item]): OutputList = {
     items.map((item: Item) => {
       var i = (item.name, flatAttrs(item.getAttributes.filter((a: Attribute) => attrNames.contains(a.name))))
-      if (attrNames.contains("itemName()")) {
+      if (attrNames.contains("itemName()")) { // ugly
         i = (i._1, ("itemName()", item.name) :: i._2)
       }
       i
@@ -51,21 +52,31 @@ abstract class WhereEval {
 }
 case class SimpleWhereEval(name: String, op: String, value: String) extends WhereEval {
   def filter(domain: Domain, items: List[Item]): List[Item] = {
-    // still need between, in, every
-    val hasOne = (a: Option[Attribute], func: (String => Boolean)) => {
-      a.isDefined && a.get.getValues.find(func).isDefined
-    }
-    val func: (Option[Attribute] => Boolean) = op match {
-      case "=" => hasOne(_, _ == value)
-      case "!=" => hasOne(_, _ != value)
-      case ">" => hasOne(_, _ > value)
-      case "<" => hasOne(_, _ < value)
-      case ">=" => hasOne(_, _ >= value)
-      case "<=" => hasOne(_, _ <= value)
-      case "like" => hasOne(_, _.matches(value.replaceAll("%", ".*")))
-      case "not-like" => hasOne(_, !_.matches(value.replaceAll("%", ".*")))
-    }
-    items.filter((i: Item) => func(i.getAttribute(name))).toList
+    // still need in
+    val func = getFunc(op)
+    items.filter((i: Item) => i.getAttribute(name) match {
+      case Some(a) => a.getValues.find(func).isDefined
+      case None => false
+    }).toList
+  }
+  def getFunc(op: String): (String => Boolean) = op match {
+      case "=" => _ == value
+      case "!=" => _ != value
+      case ">" => _ > value
+      case "<" => _ < value
+      case ">=" => _ >= value
+      case "<=" => _ <= value
+      case "like" => _.matches(value.replaceAll("%", ".*"))
+      case "not-like" => !_.matches(value.replaceAll("%", ".*"))
+  }
+}
+case class EveryEval(override val name: String, override val op: String, override val value: String) extends SimpleWhereEval(name, op, value) {
+  override def filter(domain: Domain, items: List[Item]): List[Item] = {
+    val func = getFunc(op)
+    items.filter((i: Item) => i.getAttribute(name) match {
+      case Some(a) => a.getValues.forall(func)
+      case None => false
+    }).toList
   }
 }
 case class CompoundWhereEval(sp: WhereEval, op: String, rest: WhereEval) extends WhereEval {
@@ -86,6 +97,14 @@ case class IsNullEval(name: String, isNull: Boolean) extends WhereEval {
     }).toList
   }
 }
+case class IsBetweenEval(name: String, lower: String, upper: String) extends WhereEval {
+  def filter(domain: Domain, items: List[Item]): List[Item] = {
+    items.filter((i: Item) => i.getAttribute(name) match {
+      case Some(a) => a.getValues.exists(_ >= lower) && a.getValues.exists(_ <= upper)
+      case None => false
+    }).toList
+  }
+}
 // Use our own lexer because the "()" in "itemName()"
 class SelectLexical extends StdLexical {
   override def token: Parser[Token] = (
@@ -95,8 +114,8 @@ class SelectLexical extends StdLexical {
 }
 object SelectParser extends StandardTokenParsers {
   override val lexical = new SelectLexical
-  lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=")
-  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null")
+  lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=", "(", ")")
+  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every")
 
   def expr = (
     "select" ~ outputList ~ "from" ~ ident ~ "where" ~ where ^^ { case s ~ ol ~ fs ~ fi ~ ws ~ wc => SelectEval(ol, fi, Some(wc)) }
@@ -113,6 +132,8 @@ object SelectParser extends StandardTokenParsers {
   def simplePredicate: Parser[WhereEval] = (
     ident ~ "is" ~ "null" ^^ { case i ~ is ~ nul => IsNullEval(i, true) }
     | ident ~ "is" ~ "not" ~ "null" ^^ { case i ~ is ~ no ~ nul => IsNullEval(i, false) }
+    | ident ~ "between" ~ stringLit ~ "and" ~ stringLit ^^ { case i ~ bw ~ a ~ an ~ b => IsBetweenEval(i, a, b) }
+    | "every" ~ "(" ~ ident ~ ")" ~ op ~ stringLit ^^ { case estr ~ lp ~ i ~ rp ~ o ~ v => EveryEval(i, o, v)}
     | ident ~ op ~ stringLit ^^ { case i ~ o ~ v => SimpleWhereEval(i, o, v) }
   )
 

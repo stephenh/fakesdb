@@ -43,6 +43,15 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("b", "2"))), results2(0))
   }
 
+  def testFromWithOneAttributeWithMultipleValues(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itema").put("a", "1", false)
+    println(domaina.getOrCreateItem("itema").getAttribute("a").get.getValues.toList)
+    val results = SelectParser.makeSelectEval("select a from domaina").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itema", List(("a", "1"), ("a", "1"))), results(0))
+  }
+
   def testFromWithTwoAttributes(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itema").put("b", "2", true)
@@ -149,6 +158,24 @@ class SelectParserTest extends TestCase {
     val results = SelectParser.makeSelectEval("select * from domaina where a is not null").select(data)
     assertEquals(1, results.size)
     assertEquals(("itema", List(("a", "1"))), results(0))
+  }
+
+  def testWhereBetween(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itemb").put("a", "2", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a between '2' and '3'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itemb", List(("a", "2"))), results(0))
+  }
+
+  def testWhereEvery(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itema").put("a", "1", false)
+    domaina.getOrCreateItem("itemb").put("a", "1", true)
+    domaina.getOrCreateItem("itemb").put("a", "2", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where every(a) = '1'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itema", List(("a", "1"), ("a", "1"))), results(0))
   }
 
   def testWhereEqualsAnd(): Unit = {
