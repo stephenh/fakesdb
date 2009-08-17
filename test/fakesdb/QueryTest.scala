@@ -3,7 +3,7 @@ package fakesdb
 import junit.framework.Assert._
 import com.xerox.amazonws.sdb.ItemAttribute
 
-class QueryTest extends AbstractSimpleSdbTest {
+class QueryTest extends AbstractFakeSdbTest {
 
   override def setUp(): Unit = {
     super.setUp

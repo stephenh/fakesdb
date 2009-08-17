@@ -4,7 +4,7 @@ import junit.framework.TestCase
 import com.xerox.amazonws.sdb.ItemAttribute
 import com.xerox.amazonws.sdb.SimpleDB
 
-abstract class AbstractSimpleSdbTest extends TestCase {
+abstract class AbstractFakeSdbTest extends TestCase {
   
   // val domainName = "pixel-rotation-service.dev"
   // val sdb = new SimpleDB("real", "real", false)

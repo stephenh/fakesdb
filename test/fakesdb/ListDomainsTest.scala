@@ -2,7 +2,7 @@ package fakesdb
 
 import junit.framework.Assert._
 
-class ListDomainsTest extends AbstractSimpleSdbTest {
+class ListDomainsTest extends AbstractFakeSdbTest {
 
   def testFoo(): Unit = {
     sdb.createDomain("domain1")

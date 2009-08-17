@@ -2,7 +2,7 @@ package fakesdb
 
 import junit.framework.Assert._
 
-class FlushDomainsTest extends AbstractSimpleSdbTest{
+class FlushDomainsTest extends AbstractFakeSdbTest {
 
   def testFoo(): Unit = {
     // Start with a flush

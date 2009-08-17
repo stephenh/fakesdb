@@ -2,7 +2,7 @@ package fakesdb
 
 import junit.framework.Assert._
 
-class PutAttributesTest extends AbstractSimpleSdbTest {
+class PutAttributesTest extends AbstractFakeSdbTest {
 
   override def setUp(): Unit = {
     super.setUp
