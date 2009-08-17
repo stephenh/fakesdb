@@ -6,7 +6,6 @@ import com.xerox.amazonws.sdb.SimpleDB
 
 abstract class AbstractFakeSdbTest extends TestCase {
   
-  // val domainName = "pixel-rotation-service.dev"
   // val sdb = new SimpleDB("real", "real", false)
   // typica does not respect ports 9999
   val sdb = new SimpleDB("ignored", "ignored", false, "127.0.0.1")
