@@ -126,8 +126,8 @@ object SelectParser extends StandardTokenParsers {
   lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every", "in")
 
   def expr = (
-    "select" ~ outputList ~ "from" ~ ident ~ "where" ~ where ^^ { case s ~ ol ~ fs ~ fi ~ ws ~ wc => SelectEval(ol, fi, Some(wc)) }
-    | "select" ~ outputList ~ "from" ~ ident ^^ { case s ~ ol ~ fs ~ fi => SelectEval(ol, fi, None) }
+    "select" ~> outputList ~ "from" ~ ident ~ "where" ~ where ^^ { case ol ~ fs ~ fi ~ ws ~ wc => SelectEval(ol, fi, Some(wc)) }
+    | "select" ~> outputList ~ "from" ~ ident ^^ { case ol ~ fs ~ fi => SelectEval(ol, fi, None) }
   )
 
   def where: Parser[WhereEval] = (
