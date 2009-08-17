@@ -52,7 +52,6 @@ abstract class WhereEval {
 }
 case class SimpleWhereEval(name: String, op: String, value: String) extends WhereEval {
   def filter(domain: Domain, items: List[Item]): List[Item] = {
-    // still need in
     val func = getFunc(op)
     items.filter((i: Item) => i.getAttribute(name) match {
       case Some(a) => a.getValues.find(func).isDefined
@@ -70,6 +69,7 @@ case class SimpleWhereEval(name: String, op: String, value: String) extends Wher
       case "not-like" => !_.matches(value.replaceAll("%", ".*"))
   }
 }
+// all the overrides is pretty ugly...
 case class EveryEval(override val name: String, override val op: String, override val value: String) extends SimpleWhereEval(name, op, value) {
   override def filter(domain: Domain, items: List[Item]): List[Item] = {
     val func = getFunc(op)
@@ -105,6 +105,14 @@ case class IsBetweenEval(name: String, lower: String, upper: String) extends Whe
     }).toList
   }
 }
+case class InEval(name: String, values: List[String]) extends WhereEval {
+  def filter(domain: Domain, items: List[Item]): List[Item] = {
+    items.filter((i: Item) => i.getAttribute(name) match {
+      case Some(a) => a.getValues.exists(values.contains(_))
+      case None => false
+    }).toList
+  }
+}
 // Use our own lexer because the "()" in "itemName()"
 class SelectLexical extends StdLexical {
   override def token: Parser[Token] = (
@@ -115,7 +123,7 @@ class SelectLexical extends StdLexical {
 object SelectParser extends StandardTokenParsers {
   override val lexical = new SelectLexical
   lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=", "(", ")")
-  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every")
+  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every", "in")
 
   def expr = (
     "select" ~ outputList ~ "from" ~ ident ~ "where" ~ where ^^ { case s ~ ol ~ fs ~ fi ~ ws ~ wc => SelectEval(ol, fi, Some(wc)) }
@@ -133,6 +141,7 @@ object SelectParser extends StandardTokenParsers {
     ident ~ "is" ~ "null" ^^ { case i ~ is ~ nul => IsNullEval(i, true) }
     | ident ~ "is" ~ "not" ~ "null" ^^ { case i ~ is ~ no ~ nul => IsNullEval(i, false) }
     | ident ~ "between" ~ stringLit ~ "and" ~ stringLit ^^ { case i ~ bw ~ a ~ an ~ b => IsBetweenEval(i, a, b) }
+    | ident ~ "in" ~ "(" ~ repsep(stringLit, ",") ~ ")" ^^ { case i ~ instr ~ lp ~ strs ~ rp => InEval(i, strs) }
     | "every" ~ "(" ~ ident ~ ")" ~ op ~ stringLit ^^ { case estr ~ lp ~ i ~ rp ~ o ~ v => EveryEval(i, o, v)}
     | ident ~ op ~ stringLit ^^ { case i ~ o ~ v => SimpleWhereEval(i, o, v) }
   )

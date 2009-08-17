@@ -178,6 +178,16 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"), ("a", "1"))), results(0))
   }
 
+  def testWhereIn(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itemb").put("a", "2", true)
+    domaina.getOrCreateItem("itemc").put("a", "3", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a in ('1', '2')").select(data)
+    assertEquals(2, results.size)
+    assertEquals(("itema", List(("a", "1"))), results(0))
+    assertEquals(("itemb", List(("a", "2"))), results(1))
+  }
+
   def testWhereEqualsAnd(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itema").put("b", "2", true)
