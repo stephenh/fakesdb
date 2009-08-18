@@ -7,7 +7,7 @@ import scala.collection.mutable.LinkedHashSet
 class Data {
   private val domains = new LinkedHashMap[String, Domain]()
   def getDomains(): Iterator[Domain] = domains.values
-  def getDomain(name: String): Option[Domain] = return domains.get(name)
+  def getDomain(name: String): Option[Domain] = domains.get(name)
   def getOrCreateDomain(name: String): Domain = domains.getOrElseUpdate(name, new Domain(name))
   def deleteDomain(domain: Domain): Unit = domains.removeKey(domain.name)
   def flush(): Unit = domains.clear

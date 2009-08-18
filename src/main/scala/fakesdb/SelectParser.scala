@@ -12,11 +12,11 @@ case class SelectEval(output: OutputEval, from: String, where: WhereEval, order:
   }
 }
 
-sealed abstract class OutputEval {
+abstract class OutputEval {
   type OutputList = List[(String, List[(String, String)])]
   def what(domain: Domain, items: List[Item]): OutputList
 
-  def flatAttrs(attrs: Iterator[Attribute]): List[(String, String)] = {
+  protected def flatAttrs(attrs: Iterator[Attribute]): List[(String, String)] = {
     attrs.flatMap((a: Attribute) => a.getValues.map((v: String) => (a.name, v))).toList
   }
 }
@@ -46,6 +46,17 @@ class CountOutput extends OutputEval {
 
 abstract class WhereEval {
   def filter(domain: Domain, items: List[Item]): List[Item]
+
+  protected def getFunc(op: String): Function2[String, String, Boolean] = op match {
+    case "=" => _ == _
+    case "!=" => _ != _
+    case ">" => _ > _
+    case "<" => _ < _
+    case ">=" => _ >= _
+    case "<=" => _ <= _
+    case "like" => (v1, v2) => v1.matches(v2.replaceAll("%", ".*"))
+    case "not-like" => (v1, v2) => !v1.matches(v2.replaceAll("%", ".*"))
+  }
 }
 class NoopWhere extends WhereEval {
   def filter(domain: Domain, items: List[Item]): List[Item] = items
@@ -54,27 +65,16 @@ case class SimpleWhereEval(name: String, op: String, value: String) extends Wher
   def filter(domain: Domain, items: List[Item]): List[Item] = {
     val func = getFunc(op)
     items.filter((i: Item) => i.getAttribute(name) match {
-      case Some(a) => a.getValues.find(func).isDefined
+      case Some(a) => a.getValues.find(func(_, value)).isDefined
       case None => false
     }).toList
   }
-  def getFunc(op: String): (String => Boolean) = op match {
-      case "=" => _ == value
-      case "!=" => _ != value
-      case ">" => _ > value
-      case "<" => _ < value
-      case ">=" => _ >= value
-      case "<=" => _ <= value
-      case "like" => _.matches(value.replaceAll("%", ".*"))
-      case "not-like" => !_.matches(value.replaceAll("%", ".*"))
-  }
 }
-// all the overrides is pretty ugly...
-case class EveryEval(override val name: String, override val op: String, override val value: String) extends SimpleWhereEval(name, op, value) {
+case class EveryEval(name: String, op: String, value: String) extends WhereEval {
   override def filter(domain: Domain, items: List[Item]): List[Item] = {
     val func = getFunc(op)
     items.filter((i: Item) => i.getAttribute(name) match {
-      case Some(a) => a.getValues.forall(func)
+      case Some(a) => a.getValues.forall(func(_, value))
       case None => false
     }).toList
   }
@@ -114,6 +114,7 @@ case class InEval(name: String, values: List[String]) extends WhereEval {
     }).toList
   }
 }
+
 abstract class OrderEval {
   def sort(items: List[Item]): List[Item]
 }
@@ -141,6 +142,7 @@ case class SimpleOrderEval(name: String, way: String) extends OrderEval {
     }
   }
 }
+
 // Use our own lexer because the "()" in "itemName()"
 class SelectLexical extends StdLexical {
   override def token: Parser[Token] = (
@@ -148,31 +150,27 @@ class SelectLexical extends StdLexical {
    | accept("count(*)".toList) ^^ { x => Keyword("count(*)") }
    | super.token )
 }
+
 object SelectParser extends StandardTokenParsers {
   override val lexical = new SelectLexical
   lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=", "(", ")")
   lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every", "in", "order", "by", "asc", "desc", "intersection")
 
-  def expr = (
-    ("select" ~> outputList) ~ ("from" ~> ident) ~ whereClause ~ order ^^ { case ol ~ i ~ w ~ o => SelectEval(ol, i, w, o) }
-  )
+  def expr = ("select" ~> outputList) ~ ("from" ~> ident) ~ whereClause ~ order ^^ { case ol ~ i ~ w ~ o => SelectEval(ol, i, w, o) }
 
   def order: Parser[OrderEval] = (
     "order" ~> "by" ~> ident ~ ("asc" | "desc") ^^ { case i ~ way => SimpleOrderEval(i, way) }
     | "order" ~> "by" ~> ident ^^ { case i => SimpleOrderEval(i, "asc") }
     | success(new NoopOrder)
   )
-
   def whereClause: Parser[WhereEval] = (
     "where" ~> where
     | success(new NoopWhere)
   )
   def where: Parser[WhereEval] = (
-    simplePredicate ~ simpleOp ~ where ^^ { case sp ~ op ~ rp => CompoundWhereEval(sp, op, rp) }
+    simplePredicate ~ setOp ~ where ^^ { case sp ~ op ~ rp => CompoundWhereEval(sp, op, rp) }
     | simplePredicate
   )
-
-  def simpleOp = "and" | "or" | "intersection"
 
   def simplePredicate: Parser[WhereEval] = (
     ident ~ "is" ~ "null" ^^ { case i ~ is ~ nul => IsNullEval(i, true) }
@@ -183,8 +181,8 @@ object SelectParser extends StandardTokenParsers {
     | ident ~ op ~ stringLit ^^ { case i ~ o ~ v => SimpleWhereEval(i, o, v) }
     | "(" ~> where <~ ")"
   )
-
-  def op: Parser[String] = "=" | "!=" | ">" | "<" | ">=" | "<=" | "like" | "not" ~ "like" ^^ { case n ~ l => "not-like" }
+  def setOp = "and" | "or" | "intersection"
+  def op = "=" | "!=" | ">" | "<" | ">=" | "<=" | "like" | "not" ~ "like" ^^ { case n ~ l => "not-like" }
 
   def outputList: Parser[OutputEval] = (
     "*" ^^ { case s => new AllOutput }

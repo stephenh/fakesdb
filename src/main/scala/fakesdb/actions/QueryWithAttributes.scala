@@ -8,8 +8,8 @@ class QueryWithAttributes(data: Data) extends GetAttributes(data) {
   override def handle(params: Params): NodeSeq = {
     val domain = parseDomain(params)
     val items = params.get("QueryExpression") match {
-      case Some(q) if q.size > 0 => val qe = QueryParser.makeQueryEval(q) ; qe.sort(domain.getItems.filter(qe.eval(_)).toList).elements
-      case _ => domain.getItems
+      case Some(q) if q.size > 0 => QueryParser.makeQueryEval(q).evalAndSort(domain)
+      case _ => domain.getItems.toList
     }
     val requested = discoverAttributes(params)
     <QueryWithAttributesResponse xmlns="http://sdb.amazonaws.com/doc/2007-11-07/">

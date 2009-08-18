@@ -6,25 +6,29 @@ import scala.util.parsing.combinator.lexical._
 sealed abstract class QueryEval {
   def eval(item: Item): Boolean
   def sort(items: List[Item]): List[Item] = items
+  def evalAndSort(domain: Domain): List[Item] = {
+    sort(domain.getItems.filter(eval(_)).toList)
+  }
 }
 
 case class EvalSimplePredicate(name: String, op: String, value: String) extends QueryEval {
   def eval(item: Item): Boolean = {
-    val func: (String => Boolean) = op match {
-      case "=" => _ == value
-      case "!=" => _ != value
-      case "<" => _ < value
-      case ">" => _ > value
-      case "<=" => _ <= value
-      case ">=" => _ >= value
-      case "starts-with" => _.startsWith(value)
-      case "does-not-start-with" => !_.startsWith(value)
-      case _ => error("Invalid operator "+op)
-    }
+    val func = getFunc(op)
     item.getAttribute(name) match {
       case Some(a) => a.getValues.find(func).isDefined
       case None => false
     }
+  }
+  def getFunc(op: String): Function1[String, Boolean] = op match {
+    case "=" => _ == value
+    case "!=" => _ != value
+    case "<" => _ < value
+    case ">" => _ > value
+    case "<=" => _ <= value
+    case ">=" => _ >= value
+    case "starts-with" => _.startsWith(value)
+    case "does-not-start-with" => !_.startsWith(value)
+    case _ => error("Invalid operator "+op)
   }
 }
 
@@ -73,9 +77,11 @@ object QueryParser extends StandardTokenParsers {
   lexical.delimiters ++= List("[", "]", "=", "!=", "<", ">", ">=", "<=")
   lexical.reserved ++= List("and", "or", "not", "union", "intersection", "sort", "asc", "desc")
 
-  def expr: Parser[QueryEval] = (setPredicate ~ "sort" ~ stringLit ~ ("asc" | "desc") ^^ { case sp ~ s ~ key ~ way => EvalSort(sp, key, way) }
+  def expr: Parser[QueryEval] = (
+    setPredicate ~ "sort" ~ stringLit ~ ("asc" | "desc") ^^ { case sp ~ s ~ key ~ way => EvalSort(sp, key, way) }
     | setPredicate ~ "sort" ~ stringLit ^^ { case sp ~ s ~ key => EvalSort(sp, key, null) }
-    | setPredicate)
+    | setPredicate
+  )
   def setPredicate: Parser[QueryEval] = "not" ~ setPredicate ^^ { case n ~ sp => EvalSetNegate(sp) } |
     bracketPredicate ~ setOperator ~ setPredicate ^^ { case l ~ o ~ r => EvalCompoundPredicate(l, o, r) } |
     bracketPredicate ^^ { case sp => sp }
@@ -87,8 +93,7 @@ object QueryParser extends StandardTokenParsers {
     simplePredicate ^^ { case s => s }
   def compoundOperator: Parser[String] = "and" | "or"
 
-  def simplePredicate: Parser[QueryEval] =
-    name ~ simpleOperator ~ value ^^ { case n ~ o ~ v => EvalSimplePredicate(n, o, v) }
+  def simplePredicate: Parser[QueryEval] = name ~ simpleOperator ~ value ^^ { case n ~ o ~ v => EvalSimplePredicate(n, o, v) }
   def simpleOperator: Parser[String] =  "=" | "!=" | "<" | ">" | "<=" | ">=" | "starts-with" | "does-not-start-with"
   def name: Parser[String] = stringLit
   def value: Parser[String] = stringLit

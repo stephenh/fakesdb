@@ -1,11 +1,11 @@
-package fakesdb;
+package fakesdb
 
 import javax.servlet.http._
 import fakesdb.actions._
 
 class FakeSdbServlet extends HttpServlet {
 
-  val data: Data = new Data
+  val data = new Data
 
   override def doGet(request: HttpServletRequest, response: HttpServletResponse): Unit = synchronized {
     val params = Params(request)
