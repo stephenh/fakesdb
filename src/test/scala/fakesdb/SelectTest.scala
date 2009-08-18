@@ -6,6 +6,7 @@ import com.xerox.amazonws.sdb._
 class SelectTest extends AbstractFakeSdbTest {
 
   override def setUp(): Unit = {
+    super.setUp
     sdb.createDomain("domaina")
   }
 
