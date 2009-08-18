@@ -9,8 +9,6 @@ class FakeSdbServlet extends HttpServlet {
 
   override def doGet(request: HttpServletRequest, response: HttpServletResponse): Unit = synchronized {
     val params = Params(request)
-    println("Got params "+params)
-
     if (!params.contains("Action")) {
       response.setStatus(404)
       return
@@ -31,7 +29,6 @@ class FakeSdbServlet extends HttpServlet {
     }
 
     val xml = action.handle(params).toString
-    println("Returning "+xml)
     response.setContentType("text/xml")
     response.getWriter.write(xml)
   }
