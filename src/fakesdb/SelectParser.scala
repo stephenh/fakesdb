@@ -120,16 +120,24 @@ class NoopOrder extends OrderEval {
   def sort(items: List[Item]) = items
 }
 case class SimpleOrderEval(name: String, way: String) extends OrderEval {
-  def sort(items: List[Item]) = {
-    items.sort((a, b) => {
-      val av = a.getAttribute(name) match { case Some(a) => a.getValues.next ; case None => "" }
-      val bv = b.getAttribute(name) match { case Some(a) => a.getValues.next ; case None => "" }
-      way match {
-        case "asc" => av < bv
-        case "desc" => av > bv
-        case _ => av < bv
-      }
+  def sort(items: List[Item]): List[Item] = {
+    val comp = (lv: String, rv: String) => way match {
+      case "desc" => lv > rv
+      case _ => lv < rv
+    }
+    items.sort((l, r) => {
+      comp(resolveValue(l), resolveValue(r))
     })
+  }
+  def resolveValue(item: Item) = {
+    if (name == "itemName()") {
+      item.name
+    } else {
+      item.getAttribute(name) match {
+        case Some(a) => a.getValues.next
+        case None => "" // default value
+      }
+    }
   }
 }
 // Use our own lexer because the "()" in "itemName()"

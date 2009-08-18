@@ -233,4 +233,15 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"))), results(1))
   }
 
+  def testOrderByItemNameDesc(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itemb").put("a", "2", true)
+    domaina.getOrCreateItem("itemc").put("a", "3", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a >= '1' order by itemName() desc").select(data)
+    assertEquals(3, results.size)
+    assertEquals(("itemc", List(("a", "3"))), results(0))
+    assertEquals(("itemb", List(("a", "2"))), results(1))
+    assertEquals(("itema", List(("a", "1"))), results(2))
+  }
+
 }
