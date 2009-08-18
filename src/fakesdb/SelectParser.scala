@@ -4,12 +4,17 @@ import scala.collection.mutable.ListBuffer
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.lexical._
 
-case class SelectEval(output: OutputEval, from: String, where: Option[WhereEval])  {
+case class SelectEval(output: OutputEval, from: String, where: Option[WhereEval], order: Option[OrderEval])  {
   def select(data: Data): List[(String, List[(String,String)])] = {
     val domain = data.getDomain(from).getOrElse(error("Invalid from "+from))
-    val items = where match {
+    var items = where match {
       case Some(w) => w.filter(domain, domain.getItems.toList)
       case None => domain.getItems.toList
+    }
+    // ugly reassignment--getting null objects here would be better than Options
+    items = order match {
+      case Some(o) => o.sort(items)
+      case None => items
     }
     output.what(domain, items)
   }
@@ -113,6 +118,19 @@ case class InEval(name: String, values: List[String]) extends WhereEval {
     }).toList
   }
 }
+case class OrderEval(name: String, way: String) {
+  def sort(items: List[Item]) = {
+    items.sort((a, b) => {
+      val av = a.getAttribute(name) match { case Some(a) => a.getValues.next ; case None => "" }
+      val bv = b.getAttribute(name) match { case Some(a) => a.getValues.next ; case None => "" }
+      way match {
+        case "asc" => av < bv
+        case "desc" => av > bv
+        case _ => av < bv
+      }
+    })
+  }
+}
 // Use our own lexer because the "()" in "itemName()"
 class SelectLexical extends StdLexical {
   override def token: Parser[Token] = (
@@ -123,13 +141,20 @@ class SelectLexical extends StdLexical {
 object SelectParser extends StandardTokenParsers {
   override val lexical = new SelectLexical
   lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=", "(", ")")
-  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every", "in")
+  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every", "in", "order", "by", "asc", "desc")
 
   def expr = (
-    "select" ~> outputList ~ "from" ~ ident ~ "where" ~ where ^^ { case ol ~ fs ~ fi ~ ws ~ wc => SelectEval(ol, fi, Some(wc)) }
-    | "select" ~> outputList ~ "from" ~ ident ^^ { case ol ~ fs ~ fi => SelectEval(ol, fi, None) }
+    ("select" ~> outputList) ~ ("from" ~> ident) ~ (whereClause ?) ~ (order ?) ^^ { case ol ~ i ~ w ~ o => SelectEval(ol, i, w, o) }
   )
 
+  def order: Parser[OrderEval] = (
+    "order" ~> "by" ~> ident ~ ("asc" | "desc") ^^ { case i ~ way => OrderEval(i, way) }
+    | "order" ~> "by" ~> ident ^^ { case i => OrderEval(i, "asc") }
+  )
+
+  def whereClause: Parser[WhereEval] = (
+    "where" ~> where
+  )
   def where: Parser[WhereEval] = (
     simplePredicate ~ simpleOp ~ where ^^ { case sp ~ op ~ rp => CompoundWhereEval(sp, op, rp) }
     | simplePredicate
