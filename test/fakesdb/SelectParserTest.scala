@@ -244,4 +244,20 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"))), results(2))
   }
 
+  def testWhereCrazyAnd(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itema").put("a", "2", false)
+    val results = SelectParser.makeSelectEval("select * from domaina where a = '1' and a = '2'").select(data)
+    assertEquals(1, results.size) // FAIL
+  }
+
+  def testWhereIntersection(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    domaina.getOrCreateItem("itema").put("a", "2", false)
+    domaina.getOrCreateItem("itemb").put("a", "1", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a = '1' intersection a = '2'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itema", List(("a", "1"), ("a", "2"))), results(0))
+  }
+
 }

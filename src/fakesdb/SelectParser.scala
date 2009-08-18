@@ -82,6 +82,7 @@ case class EveryEval(override val name: String, override val op: String, overrid
 case class CompoundWhereEval(sp: WhereEval, op: String, rest: WhereEval) extends WhereEval {
   def filter(domain: Domain, items: List[Item]): List[Item] = {
     op match {
+      case "intersection" => sp.filter(domain, items).toList intersect rest.filter(domain, items).toList
       case "and" => sp.filter(domain, items).toList intersect rest.filter(domain, items).toList
       case "or" => sp.filter(domain, items).toList union rest.filter(domain, items).toList
       case _ => error("Invalid operator "+op)
@@ -150,7 +151,7 @@ class SelectLexical extends StdLexical {
 object SelectParser extends StandardTokenParsers {
   override val lexical = new SelectLexical
   lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=", "(", ")")
-  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every", "in", "order", "by", "asc", "desc")
+  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every", "in", "order", "by", "asc", "desc", "intersection")
 
   def expr = (
     ("select" ~> outputList) ~ ("from" ~> ident) ~ whereClause ~ order ^^ { case ol ~ i ~ w ~ o => SelectEval(ol, i, w, o) }
@@ -171,7 +172,7 @@ object SelectParser extends StandardTokenParsers {
     | simplePredicate
   )
 
-  def simpleOp = "and" | "or"
+  def simpleOp = "and" | "or" | "intersection"
 
   def simplePredicate: Parser[WhereEval] = (
     ident ~ "is" ~ "null" ^^ { case i ~ is ~ nul => IsNullEval(i, true) }

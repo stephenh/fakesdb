@@ -149,6 +149,14 @@ class QueryParserTest extends TestCase {
     assertFalse(qe.eval(item))
   }
 
+  def testCrazyAnd(): Unit = {
+    val qe = QueryParser.makeQueryEval("['attribute1' = 'value1' and 'attribute1' = 'value2']")
+    item.put("attribute1", "value1", true)
+    item.put("attribute1", "value2", false)
+    // False because value1 is evaled/failed then value2 is evaled/failed
+    assertFalse(qe.eval(item)) // FAIL
+  }
+
   def testIntersection(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' = 'value1'] intersection ['attribute2' = 'value2']")
     item.put("attribute1", "value1", true)
