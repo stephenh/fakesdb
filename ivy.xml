@@ -6,7 +6,7 @@
         <conf name="testing"/>
     </configurations>
     <dependencies>
-        <!-- need servlet api for default? currently leaking in from jetty -->
+        <dependency org="servletapi" name="servletapi" rev="2.4" conf="default->default"/>
         <dependency org="org.mortbay.jetty" name="jetty" rev="6.1.19" conf="testing->default,sources"/>
         <dependency org="com.google.code.typica" name="typica" rev="1.5.2a" conf="testing->default,sources"/>
         <dependency org="junit" name="junit" rev="3.8.1" conf="testing->default,sources"/>
