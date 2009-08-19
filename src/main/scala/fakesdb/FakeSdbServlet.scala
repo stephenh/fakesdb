@@ -17,6 +17,7 @@ class FakeSdbServlet extends HttpServlet {
     val action = params("Action") match {
       case "CreateDomain" => new CreateDomain(data)
       case "DeleteDomain" => new DeleteDomain(data)
+      case "DomainMetadata" => new DomainMetadata(data)
       case "ListDomains" => new ListDomains(data)
       case "GetAttributes" => new GetAttributes(data)
       case "PutAttributes" => new PutAttributes(data)
