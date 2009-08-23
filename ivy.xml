@@ -3,12 +3,12 @@
     <info organisation="bizo" module="fakesdb" status="integration"/>
     <configurations>
         <conf name="default"/>
-        <conf name="testing"/>
+        <conf name="test"/>
     </configurations>
     <dependencies>
         <dependency org="servletapi" name="servletapi" rev="2.4" conf="default->default"/>
-        <dependency org="org.mortbay.jetty" name="jetty" rev="6.1.19" conf="testing->default,sources"/>
-        <dependency org="com.google.code.typica" name="typica" rev="1.5.2a" conf="testing->default,sources"/>
-        <dependency org="junit" name="junit" rev="3.8.1" conf="testing->default,sources"/>
+        <dependency org="com.google.code.typica" name="typica" rev="1.5.2a" conf="test->default,sources"/>
+        <dependency org="junit" name="junit" rev="3.8.1" conf="test->default,sources"/>
+        <dependency org="org.mortbay.jetty" name="jetty" rev="6.1.19" conf="test->default,sources"/>
     </dependencies>
 </ivy-module>
