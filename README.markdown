@@ -34,4 +34,5 @@ Todo
 ====
 
 * Convert `build.xml` hack over to `sbt`
+* Loading the SDB URL in a browser (e.g. without a REST action) should display all of the current data
 
