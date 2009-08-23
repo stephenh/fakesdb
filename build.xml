@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<project name="fakesdb">
+  <!-- Note sbt is used for everything except the uberjar. -->
+
+  <target name="uberjar">
+    <jar destfile="target/fakesdb.jar" manifest="src/main/resources/manifest.mf">
+      <fileset dir="target/classes" includes="**/*"/>
+      <fileset dir="target/test-classes" includes="**/Jetty.class"/>
+      <zipfileset src="lib_managed/test/jetty-6.1.19.jar" includes="**/*"/>
+      <zipfileset src="lib_managed/test/jetty-util-6.1.19.jar" includes="**/*"/>
+      <zipfileset src="lib_managed/test/jetty-util-6.1.19.jar" includes="**/*"/>
+      <zipfileset src="lib_managed/test/servlet-api-2.5-20081211.jar" includes="**/*"/>
+      <zipfileset src="target/webapp/WEB-INF/lib/scala-library.jar" includes="**/*"/>
+    </jar>
+  </target>
+
+</project>
