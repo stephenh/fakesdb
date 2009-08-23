@@ -2,14 +2,20 @@
 Overview
 ========
 
-A fake version of SDB. Local, in-memory, consistent, deployed as a war.
+A fake version of Amazon's SimpleDB. Local, in-memory, consistent, deployed as a war.
 
 The entire REST API (Query, Select, etc.) is implemented, though probably with some bugs.
 
 Install
 =======
 
-To get a war, run `sbt package`, via the Scala simple built tool (`sbt`).
+The easiest way is to get the `fakesdb-version.jar` from [github](http://github.com/stephenh/fakesdb/downloads) and run:
+
+* `java -jar fakesdb-version.jar`
+
+This will start up an embedded instance of Jetty on port 8080. You can pass `-Dport=X` to specify a different port.
+
+If you're already running a J2EE container and want to deploy `fakesdb` there, you can download `fakesdb-version.war` also from [github](http://github.com/stephenh/fakesdb/downloads). You'll probably have to mount it in the root context with a virtual host, e.g. `http://fakesdb.mycompany.com`.
 
 Notes
 =====
