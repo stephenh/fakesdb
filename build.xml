@@ -3,6 +3,7 @@
 <project name="fakesdb">
   <!-- Note sbt is used for everything except the uberjar. -->
 
+  <!-- You must manually run sbt update test package before running this. -->
   <target name="uberjar">
     <jar destfile="target/fakesdb.jar" manifest="src/main/resources/manifest.mf">
       <fileset dir="target/classes" includes="**/*"/>

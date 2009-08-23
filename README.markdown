@@ -24,3 +24,8 @@ Notes
 
 * If you're using the `typica` Java SimpleDB client, through 1.6 it only uses port 80, even when given a non-80 setting. So you'll either have to run `fakesdb` on port 80 or else redirect port 80 traffic to 8080 with a firewall rule.
 
+Todo
+====
+
+* Convert `build.xml` hack over to `sbt`
+
