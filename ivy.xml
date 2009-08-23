@@ -4,11 +4,12 @@
     <configurations>
         <conf name="default"/>
         <conf name="test"/>
+        <conf name="sources"/>
     </configurations>
     <dependencies>
         <dependency org="servletapi" name="servletapi" rev="2.4" conf="default->default"/>
-        <dependency org="com.google.code.typica" name="typica" rev="1.5.2a" conf="test->default,sources"/>
-        <dependency org="junit" name="junit" rev="3.8.1" conf="test->default,sources"/>
-        <dependency org="org.mortbay.jetty" name="jetty" rev="6.1.19" conf="test->default,sources"/>
+        <dependency org="com.google.code.typica" name="typica" rev="1.5.2a" conf="test->default;sources->sources"/>
+        <dependency org="junit" name="junit" rev="3.8.1" conf="test->default;sources->sources"/>
+        <dependency org="org.mortbay.jetty" name="jetty" rev="6.1.19" conf="test->default;sources->sources"/>
     </dependencies>
 </ivy-module>
