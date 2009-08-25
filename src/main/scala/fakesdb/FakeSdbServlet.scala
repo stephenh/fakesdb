@@ -34,4 +34,6 @@ class FakeSdbServlet extends HttpServlet {
     response.getWriter.write(xml)
   }
 
+  override def doPost(request: HttpServletRequest, response: HttpServletResponse): Unit = doGet(request, response)
+
 }
