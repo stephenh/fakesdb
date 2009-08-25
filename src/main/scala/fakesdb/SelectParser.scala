@@ -2,6 +2,7 @@ package fakesdb
 
 import scala.collection.mutable.ListBuffer
 import scala.util.parsing.combinator.syntactical._
+import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.lexical._
 
 case class SelectEval(output: OutputEval, from: String, where: WhereEval, order: OrderEval)  {
@@ -148,7 +149,12 @@ class SelectLexical extends StdLexical {
   override def token: Parser[Token] = (
    accept("itemName()".toList) ^^ { x => Identifier("itemName()") }
    | accept("count(*)".toList) ^^ { x => Keyword("count(*)") }
-   | super.token )
+   | letter ~ rep( letter | digit | '_' ) ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
+   | super.token
+  )
+  // Allow case insensitive keywords by lower casing everything
+  override protected def processIdent(name: String) =
+    if (reserved contains name.toLowerCase) Keyword(name.toLowerCase) else Identifier(name)
 }
 
 object SelectParser extends StandardTokenParsers {
