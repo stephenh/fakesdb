@@ -267,4 +267,11 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("foo_bar", "1"))), results(0))
   }
 
+  def testCaseInsensitiveKeywords(): Unit = {
+    domaina.getOrCreateItem("itema").put("foo_bar", "1", true)
+    val results = SelectParser.makeSelectEval("SELECT * FROM domaina WHERE foo_bar = '1'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itema", List(("foo_bar", "1"))), results(0))
+  }
+
 }
