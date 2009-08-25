@@ -260,4 +260,11 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"), ("a", "2"))), results(0))
   }
 
+  def testKeyWithUnderscores(): Unit = {
+    domaina.getOrCreateItem("itema").put("foo_bar", "1", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where foo_bar = '1'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itema", List(("foo_bar", "1"))), results(0))
+  }
+
 }

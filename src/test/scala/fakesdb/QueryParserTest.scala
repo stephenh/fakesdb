@@ -216,4 +216,10 @@ class QueryParserTest extends TestCase {
     assertEquals(item2, sorted(0))
     assertEquals(item, sorted(1))
   }
+
+  def testKeyWithUnderscores(): Unit = {
+    val qe = QueryParser.makeQueryEval("['foo_bar' = 'value1']")
+    item.put("foo_bar", "value1", true)
+    assertTrue(qe.eval(item))
+  }
 }

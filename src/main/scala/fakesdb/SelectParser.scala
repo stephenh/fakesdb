@@ -148,7 +148,9 @@ class SelectLexical extends StdLexical {
   override def token: Parser[Token] = (
    accept("itemName()".toList) ^^ { x => Identifier("itemName()") }
    | accept("count(*)".toList) ^^ { x => Keyword("count(*)") }
-   | super.token )
+   | letter ~ rep( letter | digit | '_' ) ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
+   | super.token
+  )
 }
 
 object SelectParser extends StandardTokenParsers {
