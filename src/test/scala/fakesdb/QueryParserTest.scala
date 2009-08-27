@@ -169,6 +169,16 @@ class QueryParserTest extends TestCase {
     assertNotIn(qe, item2)
   }
 
+  def testPrecendence(): Unit = {
+    val qe = QueryParser.makeQueryEval("['attribute1' = 'value1'] intersection ['attribute2' = 'value2'] union ['attribute3' = 'value3']")
+    // could be ((a && b) || c) <-- this one is right
+    // or       (a && (b || c))
+    // Need a case where a=false but c=true
+    item.put("attribute1", "wrong", true)
+    item.put("attribute3", "value3", true)
+    assertIn(qe, item)
+  }
+
   def testNotBindsBeforeIntersection(): Unit = {
     val qe = QueryParser.makeQueryEval("not ['attribute1' = 'value1'] intersection ['attribute2' = 'value2']")
     item.put("attribute1", "value1", true)

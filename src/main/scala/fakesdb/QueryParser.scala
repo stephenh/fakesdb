@@ -7,13 +7,11 @@ sealed abstract class QueryEval {
   def eval(items: List[Item]): List[Item]
 }
 
-case class EvalCompoundPredicate(left: QueryEval, op: String, right: QueryEval) extends QueryEval {
-  def eval(items: List[Item]): List[Item] = {
-    op match {
-      case "intersection" => left.eval(items) intersect right.eval(items)
-      case "union" => left.eval(items) union right.eval(items)
-   }
-  }
+case class EvalUnionPredicate(left: QueryEval, right: QueryEval) extends QueryEval {
+  def eval(items: List[Item]): List[Item] = left.eval(items) union right.eval(items)
+}
+case class EvalIntersectionPredicate(left: QueryEval, right: QueryEval) extends QueryEval {
+  def eval(items: List[Item]): List[Item] =  left.eval(items) intersect right.eval(items)
 }
 
 case class EvalSort(filter: QueryEval, sort: Sort) extends QueryEval {
@@ -106,10 +104,7 @@ object QueryParser extends StandardTokenParsers {
     | "sort" ~ stringLit ^^ { case s ~ key => Sort(key, null) }
   )
 
-  def predicates: Parser[QueryEval] =
-    ( predicate ~ ("union" | "intersection") ~ predicates ^^ { case l ~ o ~ r => EvalCompoundPredicate(l, o, r) }
-    | predicate
-  )
+  def predicates = predicate * ("union" ^^^ EvalUnionPredicate  | "intersection" ^^^ EvalIntersectionPredicate )
 
   def predicate =
     ( "not" ~ "[" ~ attributePredicate ~ "]" ^^ { case n ~ l ~ ap ~ r => AttributeQueryEval(ap, true) }
