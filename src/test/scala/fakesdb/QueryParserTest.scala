@@ -16,145 +16,148 @@ class QueryParserTest extends TestCase {
   def testEquals(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' = 'value1']")
     item.put("attribute1", "value1", true)
-    assertTrue(qe.eval(item))
+    assertIn(qe, item)
 
     item.put("attribute1", "value2", true)
-    assertFalse(qe.eval(item))
+    assertNotIn(qe,item)
   }
 
   def testNotEquals(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' != 'value1']")
     // No attribute1 at all means false
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
     // One attribute1 that != value1 means true
     item.put("attribute1", "value2", true)
-    assertTrue(qe.eval(item))
+    assertIn(qe, item)
     // Another attribute1 that is value1 still returns true because we found value2
     item.put("attribute1", "value1", false)
-    assertTrue(qe.eval(item))
+    assertIn(qe, item)
   }
 
   def testLessThan(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' < '001']")
     // No attribute1 at all means false
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
     // One attribute1 over 001 means false
     item.put("attribute1", "002", true)
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
     // One attribute1 under 001 means true
     item.put("attribute1", "000", false)
-    assertTrue(qe.eval(item))
+    assertIn(qe, item)
   }
 
   def testGreaterThan(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' > '001']")
     // No attribute1 at all means false
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
     // One attribute1 under 001 means false
     item.put("attribute1", "000", true)
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
     // One attribute1 over 001 means true
     item.put("attribute1", "002", false)
-    assertTrue(qe.eval(item))
+    assertIn(qe, item)
   }
 
   def testLessThanOrEqualTo(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' <= '001']")
     // No attribute1 at all means false
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
     // One attribute1 over 001 means false
     item.put("attribute1", "002", true)
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
     // One attribute1 equal 001 means true
     item.put("attribute1", "001", false)
-    assertTrue(qe.eval(item))
+    assertIn(qe, item)
   }
 
   def testGreaterThanOrEqualTo(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' >= '001']")
     // No attribute1 at all means false
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
     // One attribute1 under 001 means false
     item.put("attribute1", "000", true)
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
     // One attribute1 equal 001 means true
     item.put("attribute1", "001", false)
-    assertTrue(qe.eval(item))
+    assertIn(qe, item)
   }
 
   def testStartsWith(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' starts-with 'a']")
     // No attribute1 at all means false
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
     // One attribute1 with b means false
     item.put("attribute1", "b", true)
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
     // One attribute1 with a means true
     item.put("attribute1", "a", false)
-    assertTrue(qe.eval(item))
+    assertIn(qe, item)
   }
 
   def testDoesNotStartWith(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' does-not-start-with 'a']")
     // No attribute1 at all means false
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
     // One attribute1 with a means false
     item.put("attribute1", "a", true)
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
     // One attribute1 with not-a means true
     item.put("attribute1", "b", false)
-    assertTrue(qe.eval(item))
+    assertIn(qe, item)
   }
 
   def testAnd(): Unit = {
-    val qe = QueryParser.makeQueryEval("['attribute1' = 'value1' and 'attribute2' = 'value2']")
+    val qe = QueryParser.makeQueryEval("['attribute1' > '1' and 'attribute1' < '5']")
     // No attribute1 or attribute2 at all means false
-    assertFalse(qe.eval(item))
-    // Correct attribute1 and no attribute2 means false
-    item.put("attribute1", "value1", true)
-    assertFalse(qe.eval(item))
-    // Wrong attribute2 at all means false
-    item.put("attribute2", "value3", true)
-    assertFalse(qe.eval(item))
-    // Right attribute2 means true
-    item.put("attribute2", "value2", false)
-    assertTrue(qe.eval(item))
+    assertNotIn(qe, item)
+    // Correct attribute1
+    item.put("attribute1", "2", true)
+    assertIn(qe, item)
+    // Outside attribute1
+    item.put("attribute1", "6", true)
+    assertNotIn(qe, item)
+  }
+
+  def testAndNamesMustMatch(): Unit = {
+    try {
+      val qe = QueryParser.makeQueryEval("['attribute1' = 'value1' and 'attribute2' = 'value2']")
+      qe.eval(List())
+      fail()
+    } catch {
+      case e => assertEquals("Attribute comparison names do not match", e.getMessage)
+    }
   }
 
   def testOr(): Unit = {
-    val qe = QueryParser.makeQueryEval("['attribute1' = 'value1' or 'attribute2' = 'value2']")
-    // No attribute1 or attribute2 at all means false
-    assertFalse(qe.eval(item))
-    // Wrong attribute1 and no attribute2 means false
-    item.put("attribute1", "value3", true)
-    assertFalse(qe.eval(item))
-    // Right attribute1 and no attribute2 means true
-    item.put("attribute1", "value1", false)
-    assertTrue(qe.eval(item))
-    // Test other side
-    val qe2 = QueryParser.makeQueryEval("['attribute1' = 'value4' or 'attribute2' = 'value2']")
-    item.put("attribute2", "value2", false)
-    assertTrue(qe2.eval(item))
+    val qe = QueryParser.makeQueryEval("['attribute1' < '5' or 'attribute1' > '7']")
+    // No attribute1 means false
+    assertNotIn(qe, item)
+    // Above range matches
+    item.put("attribute1", "8", true)
+    assertIn(qe, item)
+    // Not in range is false
+    item.put("attribute1", "7", true)
+    assertNotIn(qe, item)
   }
   
   def testNot(): Unit = {
     val qe = QueryParser.makeQueryEval("not ['attribute1' = 'value1']")
     // No attribute1 at all matches
-    assertTrue(qe.eval(item))
+    assertIn(qe, item)
     // Wrong attribute1 matches
     item.put("attribute1", "value2", true)
-    assertTrue(qe.eval(item))
+    assertIn(qe, item)
     // Right attribute1 means false
     item.put("attribute1", "value1", true)
-    assertFalse(qe.eval(item))
+    assertNotIn(qe, item)
   }
 
   def testCrazyAnd(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' = 'value1' and 'attribute1' = 'value2']")
     item.put("attribute1", "value1", true)
     item.put("attribute1", "value2", false)
-    // False because value1 is evaled/failed then value2 is evaled/failed
-    assertTrue(qe.eval(item)) // FAIL
+    // False because value1 is evaled and failed then value2 is evaled and failed
+    assertNotIn(qe, item)
   }
 
   def testIntersection(): Unit = {
@@ -162,8 +165,8 @@ class QueryParserTest extends TestCase {
     item.put("attribute1", "value1", true)
     item.put("attribute2", "value2", true)
     item2.put("attribute2", "value2", true)
-    assertTrue(qe.eval(item))
-    assertFalse(qe.eval(item2))
+    assertIn(qe, item)
+    assertNotIn(qe, item2)
   }
 
   def testNotBindsBeforeIntersection(): Unit = {
@@ -172,25 +175,25 @@ class QueryParserTest extends TestCase {
     item.put("attribute2", "value2", true)
     item2.put("attribute1", "value2", true)
     item2.put("attribute2", "value2", true)
-    assertFalse(qe.eval(item))
-    assertTrue(qe.eval(item2))
+    assertNotIn(qe, item)
+    assertIn(qe, item2)
   }
 
   def testUnion(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' = 'value1'] union ['attribute2' = 'value2']")
     item.put("attribute1", "value1", true)
     item2.put("attribute2", "value2", true)
-    assertTrue(qe.eval(item))
-    assertTrue(qe.eval(item2))
+    assertIn(qe, item)
+    assertIn(qe, item2)
   }
 
   def testSort(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' > '0'] sort 'attribute1'")
     item.put("attribute1", "2", true)
     item2.put("attribute1", "1", true)
-    assertTrue(qe.eval(item))
-    assertTrue(qe.eval(item2))
-    val sorted = qe.sort(List(item, item2))
+    assertIn(qe, item)
+    assertIn(qe, item2)
+    val sorted = qe.eval(List(item, item2))
     assertEquals(item2, sorted(0))
     assertEquals(item, sorted(1))
   }
@@ -199,9 +202,9 @@ class QueryParserTest extends TestCase {
     val qe = QueryParser.makeQueryEval("['attribute1' > '0'] sort 'attribute1' desc")
     item.put("attribute1", "1", true)
     item2.put("attribute1", "2", true)
-    assertTrue(qe.eval(item))
-    assertTrue(qe.eval(item2))
-    val sorted = qe.sort(List(item, item2))
+    assertIn(qe, item)
+    assertIn(qe, item2)
+    val sorted = qe.eval(List(item, item2))
     assertEquals(item2, sorted(0))
     assertEquals(item, sorted(1))
   }
@@ -210,9 +213,22 @@ class QueryParserTest extends TestCase {
     val qe = QueryParser.makeQueryEval("['attribute1' > '0'] sort 'attribute1' asc")
     item.put("attribute1", "2", true)
     item2.put("attribute1", "1", true)
-    assertTrue(qe.eval(item))
-    assertTrue(qe.eval(item2))
-    val sorted = qe.sort(List(item, item2))
+    assertIn(qe, item)
+    assertIn(qe, item2)
+    val sorted = qe.eval(List(item, item2))
+    assertEquals(item2, sorted(0))
+    assertEquals(item, sorted(1))
+  }
+  
+  def testSortIntersection(): Unit = {
+    val qe = QueryParser.makeQueryEval("['attribute1' > '0'] intersection ['attribute2' > '0'] sort 'attribute1' asc")
+    item.put("attribute1", "2", true)
+    item.put("attribute2", "2", true)
+    item2.put("attribute1", "1", true)
+    item2.put("attribute2", "1", true)
+    assertIn(qe, item)
+    assertIn(qe, item2)
+    val sorted = qe.eval(List(item, item2))
     assertEquals(item2, sorted(0))
     assertEquals(item, sorted(1))
   }
@@ -220,6 +236,17 @@ class QueryParserTest extends TestCase {
   def testKeyWithUnderscores(): Unit = {
     val qe = QueryParser.makeQueryEval("['foo_bar' = 'value1']")
     item.put("foo_bar", "value1", true)
-    assertTrue(qe.eval(item))
+    assertIn(qe, item)
+  }
+
+  private def assertIn(qe: QueryEval, i: Item) = {
+    val output = qe.eval(List(item, item2))
+    assertTrue(output.contains(i))
+  }
+
+  private def assertNotIn(qe: QueryEval, i: Item) = {
+    val output = qe.eval(List(item, item2))
+    assertFalse(output.contains(i))
   }
 }
+

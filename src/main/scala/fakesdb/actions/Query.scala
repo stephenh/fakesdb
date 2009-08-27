@@ -8,7 +8,7 @@ class Query(data: Data) extends Action(data) {
   def handle(params: Params): NodeSeq = {
     val domain = parseDomain(params)
     val items = params.get("QueryExpression") match {
-      case Some(q) if q.size > 0 => QueryParser.makeQueryEval(q).evalAndSort(domain)
+      case Some(q) if q.size > 0 => QueryParser.makeQueryEval(q).eval(domain.getItems.toList)
       case _ => domain.getItems.toList
     }
     <QueryResponse xmlns="http://sdb.amazonaws.com/doc/2007-11-07/">

@@ -8,7 +8,7 @@ class QueryWithAttributes(data: Data) extends GetAttributes(data) {
   override def handle(params: Params): NodeSeq = {
     val domain = parseDomain(params)
     val items = params.get("QueryExpression") match {
-      case Some(q) if q.size > 0 => QueryParser.makeQueryEval(q).evalAndSort(domain)
+      case Some(q) if q.size > 0 => QueryParser.makeQueryEval(q).eval(domain.getItems.toList)
       case _ => domain.getItems.toList
     }
     val requested = discoverAttributes(params)
