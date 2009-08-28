@@ -4,22 +4,63 @@ import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.lexical._
 
 sealed abstract class QueryEval {
-  def eval(item: Item): Boolean
-  def sort(items: List[Item]): List[Item] = items
-  def evalAndSort(domain: Domain): List[Item] = {
-    sort(domain.getItems.filter(eval(_)).toList)
-  }
+  def eval(items: List[Item]): List[Item]
+  def getQueriedAttributes: List[String]
 }
 
-case class EvalSimplePredicate(name: String, op: String, value: String) extends QueryEval {
-  def eval(item: Item): Boolean = {
-    val func = getFunc(op)
-    item.getAttribute(name) match {
-      case Some(a) => a.getValues.find(func).isDefined
-      case None => false
-    }
+case class EvalCompoundPredicate(op: String)(left: QueryEval, right: QueryEval) extends QueryEval {
+  def eval(items: List[Item]) = op match {
+    case "union" => left.eval(items) union right.eval(items)
+    case "intersection" => left.eval(items) intersect right.eval(items)
+    case _ => error("Invalid operator")
   }
-  def getFunc(op: String): Function1[String, Boolean] = op match {
+  def getQueriedAttributes = left.getQueriedAttributes ++ right.getQueriedAttributes
+}
+
+case class EvalSort(filter: QueryEval, sort: Sort) extends QueryEval {
+  def eval(items: List[Item]) = {
+      if (!filter.getQueriedAttributes.contains(sort.name)) {
+        error("Invalid sort attribute "+sort.name)
+      }
+    filter.eval(items).sort((a, b) => {
+      val av = a.getAttribute(sort.name) match { case Some(a) => a.getValues.next ; case None => "" }
+      val bv = b.getAttribute(sort.name) match { case Some(a) => a.getValues.next ; case None => "" }
+      sort.way match {
+        case "asc" => av < bv
+        case "desc" => av > bv
+        case _ => error("Invalid sort")
+      }
+    })
+  }
+  def getQueriedAttributes = filter.getQueriedAttributes
+}
+
+case class Sort(name: String, way: String)
+
+case class AttributeQueryEval(attributeEval: AttributeEval, negate: Boolean) extends QueryEval {
+  def eval(items: List[Item]): List[Item] = {
+    // get the name to make sure its the same in all of the attribute comparisons
+    attributeEval.name
+    items.filter((i) => {
+      val hasOne = i.getAttributes.find((a) => {
+        a.getValues.find(attributeEval.eval(_)).isDefined
+      }).isDefined
+      if (negate) !hasOne else hasOne
+    })
+  }
+  def getQueriedAttributes = if (negate) List() else List(attributeEval.name)
+}
+
+abstract class AttributeEval {
+  def eval(value: String): Boolean
+  def name: String
+}
+
+case class SimpleAttributeEval(name: String, op: String, value: String) extends AttributeEval {
+  def eval(value: String) = {
+    getFunc()(value)
+  }
+  private def getFunc(): Function1[String, Boolean] = op match {
     case "=" => _ == value
     case "!=" => _ != value
     case "<" => _ < value
@@ -32,44 +73,28 @@ case class EvalSimplePredicate(name: String, op: String, value: String) extends 
   }
 }
 
-case class EvalCompoundPredicate(left: QueryEval, op: String, right: QueryEval) extends QueryEval {
-  def eval(item: Item): Boolean = {
-    op match {
-      case "and" => left.eval(item) && right.eval(item)
-      case "or" => left.eval(item) || right.eval(item)
-      case "intersection" => left.eval(item) && right.eval(item)
-      case "union" => left.eval(item) || right.eval(item)
-      case _ => error("Invalid operator "+op)
-    }
+case class CompoundAttributeEval(op: String)(left: AttributeEval, right: AttributeEval) extends AttributeEval {
+  def eval(value: String): Boolean = op match {
+    case "and" => left.eval(value) && right.eval(value)
+    case "or" => left.eval(value) || right.eval(value)
+    case _ => error("Invalid operator "+op)
   }
-}
-
-case class EvalSetNegate(other: QueryEval) extends QueryEval {
-  def eval(item: Item) = !other.eval(item)
-}
-
-case class EvalSort(other: QueryEval, name: String, way: String) extends QueryEval {
-  def eval(item: Item) = other.eval(item)
-  override def sort(items: List[Item]) = {
-    items.sort((a, b) => {
-      val av = a.getAttribute(name) match { case Some(a) => a.getValues.next ; case None => "" }
-      val bv = b.getAttribute(name) match { case Some(a) => a.getValues.next ; case None => "" }
-      way match {
-        case "asc" => av < bv
-        case "desc" => av > bv
-        case _ => av < bv
-      }
-    })
+  def name = {
+    if (left.name != right.name) {
+      error("Attribute comparison names do not match")
+    }
+    left.name
   }
 }
 
 // Use our own lexer because the "-" in "starts-with" was causing "starts-with"
 // to be prematurely recognized as the identifier "start" instead of a delimiter
 class OurLexical extends StdLexical {
-  override def token: Parser[Token] = (
-   accept("starts-with".toList) ^^ { x => Keyword("starts-with") }
+  override def token: Parser[Token] =
+   ( accept("starts-with".toList) ^^ { x => Keyword("starts-with") }
    | accept("does-not-start-with".toList) ^^ { x => Keyword("does-not-start-with") }
-   | super.token )
+   | super.token
+  )
 }
 
 object QueryParser extends StandardTokenParsers {
@@ -77,30 +102,32 @@ object QueryParser extends StandardTokenParsers {
   lexical.delimiters ++= List("[", "]", "=", "!=", "<", ">", ">=", "<=")
   lexical.reserved ++= List("and", "or", "not", "union", "intersection", "sort", "asc", "desc")
 
-  def expr: Parser[QueryEval] = (
-    setPredicate ~ "sort" ~ stringLit ~ ("asc" | "desc") ^^ { case sp ~ s ~ key ~ way => EvalSort(sp, key, way) }
-    | setPredicate ~ "sort" ~ stringLit ^^ { case sp ~ s ~ key => EvalSort(sp, key, null) }
-    | setPredicate
+  def eval: Parser[QueryEval] =
+    ( predicates ~ sort ^^ { case p ~ s => EvalSort(p, s) }
+    | predicates
   )
-  def setPredicate: Parser[QueryEval] = "not" ~ setPredicate ^^ { case n ~ sp => EvalSetNegate(sp) } |
-    bracketPredicate ~ setOperator ~ setPredicate ^^ { case l ~ o ~ r => EvalCompoundPredicate(l, o, r) } |
-    bracketPredicate ^^ { case sp => sp }
-  def setOperator: Parser[String] = "union" | "intersection"
-  def bracketPredicate: Parser[QueryEval] = "[" ~ compoundPredicate ~ "]" ^^ { case l ~ cp ~ r => cp }
 
-  def compoundPredicate: Parser[QueryEval] =
-    simplePredicate ~ compoundOperator ~ compoundPredicate  ^^ { case l ~ o ~ r => EvalCompoundPredicate(l, o, r) } |
-    simplePredicate ^^ { case s => s }
-  def compoundOperator: Parser[String] = "and" | "or"
+  def sort =
+    ( "sort" ~ stringLit ~ ("asc" | "desc")  ^^ { case s ~ key ~ way => Sort(key, way) }
+    | "sort" ~ stringLit ^^ { case s ~ key => Sort(key, "asc") }
+  )
 
-  def simplePredicate: Parser[QueryEval] = name ~ simpleOperator ~ value ^^ { case n ~ o ~ v => EvalSimplePredicate(n, o, v) }
-  def simpleOperator: Parser[String] =  "=" | "!=" | "<" | ">" | "<=" | ">=" | "starts-with" | "does-not-start-with"
-  def name: Parser[String] = stringLit
-  def value: Parser[String] = stringLit
+  def predicates = predicate * (("union" | "intersection") ^^ { case o => EvalCompoundPredicate(o) _ })
+
+  def predicate =
+    ( "not" ~ "[" ~ attributePredicate ~ "]" ^^ { case n ~ l ~ ap ~ r => AttributeQueryEval(ap, true) }
+    | "[" ~ attributePredicate ~ "]" ^^ { case l ~ ap ~ r => AttributeQueryEval(ap, false) }
+  )
+
+  def attributePredicate = attributeComparison * (("and" | "or") ^^ { case o => CompoundAttributeEval(o) _ } )
+
+  def attributeComparison = stringLit ~ attributeOperator ~ stringLit ^^ { case n ~ o ~ v => SimpleAttributeEval(n, o, v) }
+
+  def attributeOperator = "=" | "!=" | "<" | ">" | "<=" | ">=" | "starts-with" | "does-not-start-with"
 
   def makeQueryEval(input: String): QueryEval = {
     val tokens = new lexical.Scanner(input)
-    phrase(expr)(tokens) match {
+    phrase(eval)(tokens) match {
       case Success(queryEval, _) => queryEval
       case Failure(msg, _) => error(msg)
       case Error(msg, _) => error(msg)

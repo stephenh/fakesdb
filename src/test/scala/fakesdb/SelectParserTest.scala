@@ -274,4 +274,18 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("foo_bar", "1"))), results(0))
   }
 
+  def testLimit(): Unit = {
+    domaina.getOrCreateItem("itema").put("foo", "1", true)
+    domaina.getOrCreateItem("itemb").put("foo", "2", true)
+    domaina.getOrCreateItem("itemc").put("foo", "3", true)
+    val results = SelectParser.makeSelectEval("SELECT * FROM domaina WHERE foo > '0' limit 2").select(data)
+    assertEquals(2, results.size)
+    assertEquals(("itema", List(("foo", "1"))), results(0))
+    assertEquals(("itemb", List(("foo", "2"))), results(1))
+    // Now with order by
+    val results2 = SelectParser.makeSelectEval("SELECT * FROM domaina WHERE foo > '0' order by foo desc limit 2").select(data)
+    assertEquals(2, results2.size)
+    assertEquals(("itemc", List(("foo", "3"))), results2(0))
+    assertEquals(("itemb", List(("foo", "2"))), results2(1))
+  }
 }

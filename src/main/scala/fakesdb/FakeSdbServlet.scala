@@ -29,7 +29,17 @@ class FakeSdbServlet extends HttpServlet {
       case other => error("Invalid action "+other)
     }
 
-    val xml = action.handle(params).toString
+    var xml = ""
+    try {
+      xml = action.handle(params).toString
+    } catch {
+      case e => xml = <Response>
+        <Errors><Error><Code>foo</Code><Message>{e.getMessage}</Message><BoxUsage>0</BoxUsage></Error></Errors>
+        <RequestId>0</RequestId>
+      </Response>.toString
+      response.setStatus(400)
+    }
+
     response.setContentType("text/xml")
     response.getWriter.write(xml)
   }

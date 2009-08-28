@@ -5,10 +5,10 @@ import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.lexical._
 
-case class SelectEval(output: OutputEval, from: String, where: WhereEval, order: OrderEval)  {
+case class SelectEval(output: OutputEval, from: String, where: WhereEval, order: OrderEval, limit: LimitEval)  {
   def select(data: Data): List[(String, List[(String,String)])] = {
     val domain = data.getDomain(from).getOrElse(error("Invalid from "+from))
-    val items = order.sort(where.filter(domain, domain.getItems.toList))
+    val items = limit.limit(order.sort(where.filter(domain, domain.getItems.toList)))
     output.what(domain, items)
   }
 }
@@ -59,7 +59,7 @@ abstract class WhereEval {
     case "not-like" => (v1, v2) => !v1.matches(v2.replaceAll("%", ".*"))
   }
 }
-class NoopWhere extends WhereEval {
+case class NoopWhere() extends WhereEval {
   def filter(domain: Domain, items: List[Item]): List[Item] = items
 }
 case class SimpleWhereEval(name: String, op: String, value: String) extends WhereEval {
@@ -71,6 +71,17 @@ case class SimpleWhereEval(name: String, op: String, value: String) extends Wher
     }).toList
   }
 }
+
+abstract class LimitEval {
+  def limit(items: List[Item]): List[Item]
+}
+case class NoopLimit() extends LimitEval {
+  def limit(items: List[Item]) = items
+}
+case class SomeLimit(limit: Int) extends LimitEval {
+  def limit(items: List[Item]) = items take limit
+}
+
 case class EveryEval(name: String, op: String, value: String) extends WhereEval {
   override def filter(domain: Domain, items: List[Item]): List[Item] = {
     val func = getFunc(op)
@@ -119,7 +130,7 @@ case class InEval(name: String, values: List[String]) extends WhereEval {
 abstract class OrderEval {
   def sort(items: List[Item]): List[Item]
 }
-class NoopOrder extends OrderEval {
+case class NoopOrder() extends OrderEval {
   def sort(items: List[Item]) = items
 }
 case class SimpleOrderEval(name: String, way: String) extends OrderEval {
@@ -146,8 +157,8 @@ case class SimpleOrderEval(name: String, way: String) extends OrderEval {
 
 // Use our own lexer because the "()" in "itemName()"
 class SelectLexical extends StdLexical {
-  override def token: Parser[Token] = (
-   accept("itemName()".toList) ^^ { x => Identifier("itemName()") }
+  override def token: Parser[Token] =
+   ( accept("itemName()".toList) ^^ { x => Identifier("itemName()") }
    | accept("count(*)".toList) ^^ { x => Keyword("count(*)") }
    | letter ~ rep( letter | digit | '_' ) ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
    | super.token
@@ -160,26 +171,32 @@ class SelectLexical extends StdLexical {
 object SelectParser extends StandardTokenParsers {
   override val lexical = new SelectLexical
   lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=", "(", ")")
-  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every", "in", "order", "by", "asc", "desc", "intersection")
+  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every", "in", "order", "by", "asc", "desc", "intersection", "limit")
 
-  def expr = ("select" ~> outputList) ~ ("from" ~> ident) ~ whereClause ~ order ^^ { case ol ~ i ~ w ~ o => SelectEval(ol, i, w, o) }
+  def expr = ("select" ~> outputList) ~ ("from" ~> ident) ~ whereClause ~ order ~ limit ^^ { case ol ~ i ~ w ~ o ~ l => SelectEval(ol, i, w, o, l) }
 
-  def order: Parser[OrderEval] = (
-    "order" ~> "by" ~> ident ~ ("asc" | "desc") ^^ { case i ~ way => SimpleOrderEval(i, way) }
+  def order: Parser[OrderEval] =
+    ( "order" ~> "by" ~> ident ~ ("asc" | "desc") ^^ { case i ~ way => SimpleOrderEval(i, way) }
     | "order" ~> "by" ~> ident ^^ { case i => SimpleOrderEval(i, "asc") }
-    | success(new NoopOrder)
+    | success(NoopOrder())
   )
-  def whereClause: Parser[WhereEval] = (
-    "where" ~> where
+
+  def limit: Parser[LimitEval] =
+    ( "limit" ~ numericLit ^^ { case l ~ num => SomeLimit(num.toInt) }
+    | success(NoopLimit())
+  )
+
+  def whereClause: Parser[WhereEval] =
+    ( "where" ~> where
     | success(new NoopWhere)
   )
-  def where: Parser[WhereEval] = (
-    simplePredicate ~ setOp ~ where ^^ { case sp ~ op ~ rp => CompoundWhereEval(sp, op, rp) }
+  def where: Parser[WhereEval] =
+    ( simplePredicate ~ setOp ~ where ^^ { case sp ~ op ~ rp => CompoundWhereEval(sp, op, rp) }
     | simplePredicate
   )
 
-  def simplePredicate: Parser[WhereEval] = (
-    ident ~ "is" ~ "null" ^^ { case i ~ is ~ nul => IsNullEval(i, true) }
+  def simplePredicate: Parser[WhereEval] =
+    ( ident ~ "is" ~ "null" ^^ { case i ~ is ~ nul => IsNullEval(i, true) }
     | ident ~ "is" ~ "not" ~ "null" ^^ { case i ~ is ~ no ~ nul => IsNullEval(i, false) }
     | ident ~ "between" ~ stringLit ~ "and" ~ stringLit ^^ { case i ~ bw ~ a ~ an ~ b => IsBetweenEval(i, a, b) }
     | ident ~ "in" ~ "(" ~ repsep(stringLit, ",") ~ ")" ^^ { case i ~ instr ~ lp ~ strs ~ rp => InEval(i, strs) }
@@ -190,8 +207,8 @@ object SelectParser extends StandardTokenParsers {
   def setOp = "and" | "or" | "intersection"
   def op = "=" | "!=" | ">" | "<" | ">=" | "<=" | "like" | "not" ~ "like" ^^ { case n ~ l => "not-like" }
 
-  def outputList: Parser[OutputEval] = (
-    "*" ^^ { case s => new AllOutput }
+  def outputList: Parser[OutputEval] =
+    ( "*" ^^ { case s => new AllOutput }
     | "count(*)" ^^ { _ => new CountOutput }
     | repsep(ident, ",") ^^ { attrNames: List[String] => CompoundOutput(attrNames) }
   )

@@ -32,6 +32,7 @@ Todo
 ====
 
 * Convert `build.xml` hack over to `sbt`
+* Hook up the test suite to `sbt` so that it is scripted
 * Loading the SDB URL in a browser (e.g. without a REST action) should display all of the current data
 * [Release It](http://www.pragprog.com/titles/mnee/release-it) talks about having "fake" (better term?) versions of systems like `fakesdb` purposefully lock up, fail, etc., to test how your real application responds--it would be cool to flip `fakesdb` into several error modes either via a web UI or meta-domains (like the current `_flush` domain)
 
