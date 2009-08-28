@@ -7,11 +7,12 @@ sealed abstract class QueryEval {
   def eval(items: List[Item]): List[Item]
 }
 
-case class EvalUnionPredicate(left: QueryEval, right: QueryEval) extends QueryEval {
-  def eval(items: List[Item]): List[Item] = left.eval(items) union right.eval(items)
-}
-case class EvalIntersectionPredicate(left: QueryEval, right: QueryEval) extends QueryEval {
-  def eval(items: List[Item]): List[Item] =  left.eval(items) intersect right.eval(items)
+case class EvalCompoundPredicate(op: String)(left: QueryEval, right: QueryEval) extends QueryEval {
+  def eval(items: List[Item]) = op match {
+    case "union" => left.eval(items) union right.eval(items)
+    case "intersection" => left.eval(items) intersect right.eval(items)
+    case _ => error("Invalid operator")
+  }
 }
 
 case class EvalSort(filter: QueryEval, sort: Sort) extends QueryEval {
@@ -22,7 +23,7 @@ case class EvalSort(filter: QueryEval, sort: Sort) extends QueryEval {
       sort.way match {
         case "asc" => av < bv
         case "desc" => av > bv
-        case _ => av < bv
+        case _ => error("Invalid sort")
       }
     })
   }
@@ -65,7 +66,7 @@ case class SimpleAttributeEval(name: String, op: String, value: String) extends 
   }
 }
 
-case class CompoundAttributeEval(left: AttributeEval, op: String, right: AttributeEval) extends AttributeEval {
+case class CompoundAttributeEval(op: String)(left: AttributeEval, right: AttributeEval) extends AttributeEval {
   def eval(value: String): Boolean = op match {
     case "and" => left.eval(value) && right.eval(value)
     case "or" => left.eval(value) || right.eval(value)
@@ -101,22 +102,20 @@ object QueryParser extends StandardTokenParsers {
 
   def sort =
     ( "sort" ~ stringLit ~ ("asc" | "desc")  ^^ { case s ~ key ~ way => Sort(key, way) }
-    | "sort" ~ stringLit ^^ { case s ~ key => Sort(key, null) }
+    | "sort" ~ stringLit ^^ { case s ~ key => Sort(key, "asc") }
   )
 
-  def predicates = predicate * ("union" ^^^ EvalUnionPredicate  | "intersection" ^^^ EvalIntersectionPredicate )
+  def predicates = predicate * (("union" | "intersection") ^^ { case o => EvalCompoundPredicate(o) _ })
 
   def predicate =
     ( "not" ~ "[" ~ attributePredicate ~ "]" ^^ { case n ~ l ~ ap ~ r => AttributeQueryEval(ap, true) }
     | "[" ~ attributePredicate ~ "]" ^^ { case l ~ ap ~ r => AttributeQueryEval(ap, false) }
   )
 
-  def attributePredicate: Parser[AttributeEval] =
-    ( attributeComparison ~ ("and" | "or") ~ attributePredicate ^^ { case l ~ o ~ r => CompoundAttributeEval(l, o, r) }
-    | attributeComparison
-  )
+  def attributePredicate = attributeComparison * (("and" | "or") ^^ { case o => CompoundAttributeEval(o) _ } )
 
   def attributeComparison = stringLit ~ attributeOperator ~ stringLit ^^ { case n ~ o ~ v => SimpleAttributeEval(n, o, v) }
+
   def attributeOperator = "=" | "!=" | "<" | ">" | "<=" | ">=" | "starts-with" | "does-not-start-with"
 
   def makeQueryEval(input: String): QueryEval = {
