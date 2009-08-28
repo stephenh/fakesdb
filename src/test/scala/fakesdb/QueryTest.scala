@@ -25,9 +25,9 @@ class QueryTest extends AbstractFakeSdbTest {
   }
 
   def testAnd(): Unit = {
-    add(domaina, "itema", "a" -> "1", "b" -> "2")
-    add(domaina, "itemb", "a" -> "1", "b" -> "3")
-    val results = domaina.listItems("['a' = '1' and 'b' = '2']")
+    add(domaina, "itema", "a" -> "1")
+    add(domaina, "itemb", "a" -> "4")
+    val results = domaina.listItems("['a' >= '1' and 'a' <= '3']")
     assertEquals(1, results.getItemList.size)
     assertEquals("itema", results.getItemList.get(0).getIdentifier)
   }
