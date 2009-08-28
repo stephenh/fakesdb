@@ -243,6 +243,26 @@ class QueryParserTest extends TestCase {
     assertEquals(item, sorted(1))
   }
 
+  def testSortFailedIfOtherNonQueriedAttribute(): Unit = {
+    try {
+      val qe = QueryParser.makeQueryEval("['attribute1' > '0'] sort 'attribute2'")
+      qe.eval(List())
+      fail()
+    } catch {
+      case e => assertEquals("Invalid sort attribute attribute2", e.getMessage)
+    }
+  }
+
+  def testSortFailedIfQueriedAttributeWasNegated(): Unit = {
+    try {
+      val qe = QueryParser.makeQueryEval("not ['attribute1' > '0'] sort 'attribute1'")
+      qe.eval(List())
+      fail()
+    } catch {
+      case e => assertEquals("Invalid sort attribute attribute1", e.getMessage)
+    }
+  }
+
   def testKeyWithUnderscores(): Unit = {
     val qe = QueryParser.makeQueryEval("['foo_bar' = 'value1']")
     item.put("foo_bar", "value1", true)

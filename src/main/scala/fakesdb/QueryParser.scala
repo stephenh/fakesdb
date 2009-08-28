@@ -5,6 +5,7 @@ import scala.util.parsing.combinator.lexical._
 
 sealed abstract class QueryEval {
   def eval(items: List[Item]): List[Item]
+  def getQueriedAttributes: List[String]
 }
 
 case class EvalCompoundPredicate(op: String)(left: QueryEval, right: QueryEval) extends QueryEval {
@@ -13,10 +14,14 @@ case class EvalCompoundPredicate(op: String)(left: QueryEval, right: QueryEval) 
     case "intersection" => left.eval(items) intersect right.eval(items)
     case _ => error("Invalid operator")
   }
+  def getQueriedAttributes = left.getQueriedAttributes ++ right.getQueriedAttributes
 }
 
 case class EvalSort(filter: QueryEval, sort: Sort) extends QueryEval {
   def eval(items: List[Item]) = {
+      if (!filter.getQueriedAttributes.contains(sort.name)) {
+        error("Invalid sort attribute "+sort.name)
+      }
     filter.eval(items).sort((a, b) => {
       val av = a.getAttribute(sort.name) match { case Some(a) => a.getValues.next ; case None => "" }
       val bv = b.getAttribute(sort.name) match { case Some(a) => a.getValues.next ; case None => "" }
@@ -27,6 +32,7 @@ case class EvalSort(filter: QueryEval, sort: Sort) extends QueryEval {
       }
     })
   }
+  def getQueriedAttributes = filter.getQueriedAttributes
 }
 
 case class Sort(name: String, way: String)
@@ -42,6 +48,7 @@ case class AttributeQueryEval(attributeEval: AttributeEval, negate: Boolean) ext
       if (negate) !hasOne else hasOne
     })
   }
+  def getQueriedAttributes = if (negate) List() else List(attributeEval.name)
 }
 
 abstract class AttributeEval {
