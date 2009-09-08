@@ -41,7 +41,7 @@ class AllOutput extends OutputEval {
 }
 class CountOutput extends OutputEval {
   def what(domain: Domain, items: List[Item]): OutputList = {
-    List((domain.name, List(("Count", items.size.toString))))
+    List(("Domain", List(("Count", items.size.toString))))
   }
 }
 
