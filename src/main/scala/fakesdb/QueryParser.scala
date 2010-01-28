@@ -22,7 +22,7 @@ case class EvalSort(filter: QueryEval, sort: Sort) extends QueryEval {
       if (!filter.getQueriedAttributes.contains(sort.name)) {
         error("Invalid sort attribute "+sort.name)
       }
-    filter.eval(items).sort((a, b) => {
+    filter.eval(items).sortWith((a, b) => {
       val av = a.getAttribute(sort.name) match { case Some(a) => a.getValues.next ; case None => "" }
       val bv = b.getAttribute(sort.name) match { case Some(a) => a.getValues.next ; case None => "" }
       sort.way match {

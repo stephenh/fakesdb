@@ -139,7 +139,7 @@ case class SimpleOrderEval(name: String, way: String) extends OrderEval {
       case "desc" => lv > rv
       case _ => lv < rv
     }
-    items.sort((l, r) => {
+    items.sortWith((l, r) => {
       comp(resolveValue(l), resolveValue(r))
     })
   }

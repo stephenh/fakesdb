@@ -65,6 +65,13 @@ class SelectParserTest extends TestCase {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     val results = SelectParser.makeSelectEval("select count(*) from domaina").select(data)
     assertEquals(1, results.size)
+    assertEquals(("Domain", List(("Count", "1"))), results(0))
+  }
+
+  def testFromCountUpperCase(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    val results = SelectParser.makeSelectEval("SELECT COUNT(*) FROM domaina").select(data)
+    assertEquals(1, results.size)
     assertEquals(("domaina", List(("Count", "1"))), results(0))
   }
 
