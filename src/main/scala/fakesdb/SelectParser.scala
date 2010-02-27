@@ -41,7 +41,7 @@ class AllOutput extends OutputEval {
 }
 class CountOutput extends OutputEval {
   def what(domain: Domain, items: List[Item]): OutputList = {
-    List((domain.name, List(("Count", items.size.toString))))
+    List(("Domain", List(("Count", items.size.toString))))
   }
 }
 
@@ -139,7 +139,7 @@ case class SimpleOrderEval(name: String, way: String) extends OrderEval {
       case "desc" => lv > rv
       case _ => lv < rv
     }
-    items.sort((l, r) => {
+    items.sortWith((l, r) => {
       comp(resolveValue(l), resolveValue(r))
     })
   }
@@ -160,7 +160,7 @@ class SelectLexical extends StdLexical {
   override def token: Parser[Token] =
    ( accept("itemName()".toList) ^^ { x => Identifier("itemName()") }
    | accept("count(*)".toList) ^^ { x => Keyword("count(*)") }
-   | letter ~ rep( letter | digit | '_' ) ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
+   | letter ~ rep( letter | digit | '_' | '.' | '-' ) ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
    | super.token
   )
   // Allow case insensitive keywords by lower casing everything
@@ -170,10 +170,10 @@ class SelectLexical extends StdLexical {
 
 object SelectParser extends StandardTokenParsers {
   override val lexical = new SelectLexical
-  lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=", "(", ")")
+  lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=", "(", ")", "`")
   lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every", "in", "order", "by", "asc", "desc", "intersection", "limit")
 
-  def expr = ("select" ~> outputList) ~ ("from" ~> ident) ~ whereClause ~ order ~ limit ^^ { case ol ~ i ~ w ~ o ~ l => SelectEval(ol, i, w, o, l) }
+  def expr = ("select" ~> outputList) ~ (("from" ~> ident) | ("from" ~> "`" ~> ident <~ "`")) ~ whereClause ~ order ~ limit ^^ { case ol ~ i ~ w ~ o ~ l => SelectEval(ol, i, w, o, l) }
 
   def order: Parser[OrderEval] =
     ( "order" ~> "by" ~> ident ~ ("asc" | "desc") ^^ { case i ~ way => SimpleOrderEval(i, way) }

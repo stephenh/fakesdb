@@ -65,6 +65,13 @@ class SelectParserTest extends TestCase {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     val results = SelectParser.makeSelectEval("select count(*) from domaina").select(data)
     assertEquals(1, results.size)
+    assertEquals(("Domain", List(("Count", "1"))), results(0))
+  }
+
+  def testFromCountUpperCase(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1", true)
+    val results = SelectParser.makeSelectEval("SELECT COUNT(*) FROM domaina").select(data)
+    assertEquals(1, results.size)
     assertEquals(("domaina", List(("Count", "1"))), results(0))
   }
 
@@ -272,6 +279,15 @@ class SelectParserTest extends TestCase {
     val results = SelectParser.makeSelectEval("SELECT * FROM domaina WHERE foo_bar = '1'").select(data)
     assertEquals(1, results.size)
     assertEquals(("itema", List(("foo_bar", "1"))), results(0))
+  }
+
+  def testLarrysQuery(): Unit = {
+    val usage = data.getOrCreateDomain("dev.api-web-usage")
+    val a = usage.getOrCreateItem("itema")
+    a.put("api_key", "1", true)
+    a.put("dt", "2010010001", true)
+    val results = SelectParser.makeSelectEval("select * from `dev.api-web-usage` where api_key = '1' and dt > '2010010000' and dt < '2010013224'").select(data)
+    assertEquals(1, results.size)
   }
 
   def testLimit(): Unit = {

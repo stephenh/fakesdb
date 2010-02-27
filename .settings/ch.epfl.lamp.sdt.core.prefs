@@ -1,4 +1,4 @@
-#Fri Aug 14 16:51:53 CDT 2009
+#Mon Jan 18 23:12:20 CST 2010
 <file>=false
 Xcheck-null=false
 Xcheckinit=false
@@ -8,6 +8,8 @@ Xfuture=false
 Xlog-implicits=false
 Xno-uescape=false
 Xno-varargs-conversion=false
+Xstrict-warnings=false
+Xwarninit=false
 Yclosure-elim=false
 Ydead-code=false
 Ydetach=false
@@ -17,9 +19,16 @@ Yno-generic-signatures=false
 Yno-imports=false
 Yno-predefs=false
 Yself-in-annots=false
+Yspecialize=false
+Ysqueeze=on
+Ytailrecommend=false
+Ywarn-catches=false
 Ywarn-dead-code=false
+Ywarn-shadowing=false
+deprecation=true
 eclipse.preferences.version=1
 g=vars
 optimise=false
 scala.compiler.useProjectSettings=true
 target=jvm-1.5
+unchecked=false

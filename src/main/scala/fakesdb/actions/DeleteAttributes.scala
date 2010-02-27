@@ -41,7 +41,7 @@ class DeleteAttributes(data: Data) extends Action(data) {
       if (attrName.isEmpty && attrValue.isEmpty) {
         if (i > 1) stop = true
       } else {
-        attrs += (attrName.get, attrValue)
+        attrs += Tuple2(attrName.get, attrValue)
       }
       i += 1
     }

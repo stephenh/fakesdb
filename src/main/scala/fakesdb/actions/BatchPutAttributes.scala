@@ -34,7 +34,7 @@ class BatchPutAttributes(data: Data) extends Action(data) {
           if (attrName.isEmpty || attrValue.isEmpty) {
             if (j > 1) stop2 = true
           } else {
-            attrs += (itemName.get, attrName.get, attrValue.get, attrReplace.getOrElse("false").toBoolean)
+            attrs += ((itemName.get, attrName.get, attrValue.get, attrReplace.getOrElse("false").toBoolean))
           }
           j += 1
         }

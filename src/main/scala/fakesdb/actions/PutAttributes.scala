@@ -27,7 +27,7 @@ class PutAttributes(data: Data) extends Action(data) {
       if (attrName.isEmpty || attrValue.isEmpty) {
         if (i > 1) stop = true
       } else {
-        attrs += (attrName.get, attrValue.get, attrReplace.getOrElse("false").toBoolean)
+        attrs += ((attrName.get, attrValue.get, attrReplace.getOrElse("false").toBoolean))
       }
       i += 1
     }
