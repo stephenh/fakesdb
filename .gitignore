@@ -2,4 +2,5 @@ bin
 .manager
 target
 boot
+lib
 lib_managed
