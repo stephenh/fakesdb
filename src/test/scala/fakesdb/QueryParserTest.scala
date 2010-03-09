@@ -169,6 +169,13 @@ class QueryParserTest extends TestCase {
     assertNotIn(qe, item2)
   }
 
+  def testIntersection2(): Unit = {
+    val qe = QueryParser.makeQueryEval("['attribute1' = 'value2'] intersection ['attribute2' >= 'value2'] sort 'attribute2'")
+    item.put("attribute1", "value1", true)
+    item.put("attribute2", "value2", true)
+    assertNotIn(qe, item)
+  }
+
   def testPrecendence(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' = 'value1'] intersection ['attribute2' = 'value2'] union ['attribute3' = 'value3']")
     // could be ((a && b) || c) <-- this one is right

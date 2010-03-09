@@ -43,7 +43,7 @@ case class AttributeQueryEval(attributeEval: AttributeEval, negate: Boolean) ext
     attributeEval.name
     items.filter((i) => {
       val hasOne = i.getAttributes.find((a) => {
-        a.getValues.find(attributeEval.eval(_)).isDefined
+        a.name == attributeEval.name && a.getValues.find(attributeEval.eval(_)).isDefined
       }).isDefined
       if (negate) !hasOne else hasOne
     })
