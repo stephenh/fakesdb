@@ -100,7 +100,7 @@ class OurLexical extends StdLexical {
 object QueryParser extends StandardTokenParsers {
   override val lexical = new OurLexical()
   lexical.delimiters ++= List("[", "]", "=", "!=", "<", ">", ">=", "<=")
-  lexical.reserved ++= List("and", "or", "not", "union", "intersection", "sort", "asc", "desc")
+  lexical.reserved ++= List("and", "or", "not", "union", "intersection", "sort", "asc", "desc", "starts-with", "does-not-start-with")
 
   def eval: Parser[QueryEval] =
     ( predicates ~ sort ^^ { case p ~ s => EvalSort(p, s) }
