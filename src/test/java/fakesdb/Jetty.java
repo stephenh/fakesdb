@@ -6,28 +6,34 @@ import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
 
 public class Jetty {
+  private final Server server = new Server();
 
-  private static final Server SERVER = new Server();
-
-  public static void main(String[] args) {
+  public Jetty(final int port) {
     // Use SocketConnector because SelectChannelConnector locks files
     Connector connector = new SocketConnector();
-    connector.setPort(new Integer(System.getProperty("port", "8080")));
+    connector.setPort(port);
     connector.setMaxIdleTime(60000);
+    connector.setHeaderBufferSize(24 * 1024);
 
     ServletHandler handler = new ServletHandler();
     handler.addServletWithMapping(FakeSdbServlet.class.getName(), "/*");
 
-    Jetty.SERVER.setConnectors(new Connector[] { connector });
-    Jetty.SERVER.setHandlers(new Handler[] { handler });
-    Jetty.SERVER.setAttribute("org.mortbay.jetty.Request.maxFormContentSize", 0);
-    Jetty.SERVER.setStopAtShutdown(true);
+    this.server.setConnectors(new Connector[] { connector });
+    this.server.setHandlers(new Handler[] { handler });
+    this.server.setAttribute("org.mortbay.jetty.Request.maxFormContentSize", 0);
+    this.server.setStopAtShutdown(true);
+  }
 
+  public Server server() {
+    return this.server;
+  }
+
+  public static void main(String[] args) {
     try {
-      Jetty.SERVER.start();
+      final Integer port = Integer.valueOf(System.getProperty("port", "8080"));
+      new Jetty(port).server().start();
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
-
 }
