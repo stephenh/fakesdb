@@ -8,9 +8,8 @@
 
   <!-- You must manually run sbt update test package before running this. -->
   <target name="uberjar">
-    <jar destfile="target/fakesdb.jar" manifest="src/main/resources/manifest.mf">
+    <jar destfile="target/fakesdb-standalone.jar" manifest="src/main/resources/manifest.mf">
       <fileset dir="${target}/classes" includes="**/*"/>
-      <fileset dir="${target}/test-classes" includes="**/Jetty.class"/>
       <zipfileset src="${lib}/test/jetty-6.1.19.jar" includes="**/*"/>
       <zipfileset src="${lib}/test/jetty-util-6.1.19.jar" includes="**/*"/>
       <zipfileset src="${lib}/test/jetty-util-6.1.19.jar" includes="**/*"/>
