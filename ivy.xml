@@ -13,7 +13,7 @@
       <artifact name="fakesdb-servlet" type="jar" ext="jar" conf="servlet"/>
     </publications>
     <dependencies>
-        <dependency org="org.scala-lang" name="scala-library" rev="2.8.0.Beta1" conf="servlet->default"/>
+        <dependency org="org.scala-lang" name="scala-library" rev="2.8.0" conf="servlet->default"/>
 
         <dependency org="servletapi" name="servletapi" rev="2.4" conf="buildtime->default"/>
         <dependency org="com.google.code.typica" name="typica" rev="1.5.2a" conf="test->default;sources->sources"/>
