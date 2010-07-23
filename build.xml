@@ -3,8 +3,8 @@
 <project name="fakesdb">
   <!-- Note sbt is used for everything except the uberjar. -->
 
-  <property name="target" value="target/scala_2.8.0.Beta1"/>
-  <property name="lib" value="lib_managed/scala_2.8.0.Beta1"/>
+  <property name="target" value="target/scala_2.8.0"/>
+  <property name="lib" value="lib_managed/scala_2.8.0"/>
 
   <!-- You must manually run sbt update test package before running this. -->
   <target name="uberjar">
