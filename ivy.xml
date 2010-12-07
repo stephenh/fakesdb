@@ -19,6 +19,7 @@
         <dependency org="org.mortbay.jetty" name="jetty" rev="6.1.19" conf="buildtime->default;test->default;sources->sources"/>
 
         <dependency org="com.google.code.typica" name="typica" rev="1.5.2a" conf="test->default;sources->sources"/>
-        <dependency org="junit" name="junit" rev="3.8.1" conf="test->default;sources->sources"/>
+        <dependency org="junit" name="junit" rev="4.8.2" conf="test->default;sources->sources"/>
+        <dependency org="com.novocode" name="junit-interface" rev="0.4.0" conf="test->default;sources->sources"/>
     </dependencies>
 </ivy-module>

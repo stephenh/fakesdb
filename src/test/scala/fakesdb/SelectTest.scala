@@ -1,12 +1,13 @@
 package fakesdb
 
-import junit.framework.Assert._
+import org.junit._
+import org.junit.Assert._
 import com.xerox.amazonws.sdb._
 
 class SelectTest extends AbstractFakeSdbTest {
 
-  override def setUp(): Unit = {
-    super.setUp
+  @Before
+  def createDomain(): Unit = {
     sdb.createDomain("domaina")
   }
 

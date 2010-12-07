@@ -1,14 +1,16 @@
 package fakesdb
 
-import junit.framework.Assert._
+import org.junit._
+import org.junit.Assert._
 
 class DomainMetadataTest extends AbstractFakeSdbTest {
 
-  override def setUp(): Unit = {
-    super.setUp
+  @Before
+  def createDomain(): Unit = {
     sdb.createDomain("domaina")
   }
 
+  @Test
   def testFoo(): Unit = {
     add(domaina, "itema", "aa" -> "111", "bb" -> "222", "bb" -> "333")
 

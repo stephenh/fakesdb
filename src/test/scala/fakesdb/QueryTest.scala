@@ -1,20 +1,23 @@
 package fakesdb
 
-import junit.framework.Assert._
+import org.junit._
+import org.junit.Assert._
 import com.xerox.amazonws.sdb.ItemAttribute
 
 class QueryTest extends AbstractFakeSdbTest {
 
-  override def setUp(): Unit = {
-    super.setUp
+  @Before
+  def createDomain(): Unit = {
     sdb.createDomain("domaina")
   }
 
+  @Test
   def testEmptyQuery(): Unit = {
     val results = domaina.listItems
     assertEquals(0, results.getItemList.size)
   }
 
+  @Test
   def testEverythingQuery(): Unit = {
     add(domaina, "itema", "a" -> "b")
     add(domaina, "itemb", "a" -> "c")
@@ -24,6 +27,7 @@ class QueryTest extends AbstractFakeSdbTest {
     assertEquals("itemb", results.getItemList.get(1).getIdentifier)
   }
 
+  @Test
   def testAnd(): Unit = {
     add(domaina, "itema", "a" -> "1")
     add(domaina, "itemb", "a" -> "4")
@@ -32,6 +36,7 @@ class QueryTest extends AbstractFakeSdbTest {
     assertEquals("itema", results.getItemList.get(0).getIdentifier)
   }
 
+  @Test
   def testSort(): Unit = {
     add(domaina, "itema", "a" -> "2")
     add(domaina, "itemb", "a" -> "1")

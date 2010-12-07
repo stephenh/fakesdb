@@ -1,0 +1,11 @@
+<ivysettings>
+	<settings defaultResolver="default"/>
+	<include url="${ivy.default.settings.dir}/ivysettings-public.xml"/>
+	<resolvers>
+		<ibiblio name="bryanjswift" m2compatible="true" root="http://repos.bryanjswift.com/maven2/"/>
+		<chain name="default">
+			<resolver ref="bryanjswift"/>
+			<resolver ref="public"/>
+		</chain>
+	</resolvers>
+</ivysettings>

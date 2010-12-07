@@ -1,15 +1,17 @@
 package fakesdb
 
-import junit.framework.Assert._
+import org.junit._
+import org.junit.Assert._
 import com.xerox.amazonws.sdb.ItemAttribute
 
 class DeleteAttributesTest extends AbstractFakeSdbTest {
 
-  override def setUp(): Unit = {
-    flush()
+  @Before
+  def createDomain(): Unit = {
     sdb.createDomain("domaina")
   }
 
+  @Test
   def testDeleteOneEntireAttribute(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "2")
 
@@ -25,6 +27,7 @@ class DeleteAttributesTest extends AbstractFakeSdbTest {
     assertEquals("b", now.get(0).getName)
   }
 
+  @Test
   def testDeleteBothAttributesDeletesTheItem(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "2")
 
@@ -39,6 +42,7 @@ class DeleteAttributesTest extends AbstractFakeSdbTest {
     assertEquals(0, domaina.listItems.getItemList.size)
   }
 
+  @Test
   def testDeleteNoAttributesDeletesTheItem(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "2")
 

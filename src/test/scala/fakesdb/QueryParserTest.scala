@@ -1,18 +1,20 @@
 package fakesdb
 
-import junit.framework.TestCase
-import junit.framework.Assert._
+import org.junit._
+import org.junit.Assert._
 
-class QueryParserTest extends TestCase {
+class QueryParserTest {
 
   var item: Item = null
   var item2: Item = null
 
-  override def setUp(): Unit = {
+  @Before
+  def setUp(): Unit = {
     item = new Item("item1")
     item2 = new Item("item2")
   }
 
+  @Test
   def testEquals(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' = 'value1']")
     item.put("attribute1", "value1", true)
@@ -22,6 +24,7 @@ class QueryParserTest extends TestCase {
     assertNotIn(qe,item)
   }
 
+  @Test
   def testNotEquals(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' != 'value1']")
     // No attribute1 at all means false
@@ -34,6 +37,7 @@ class QueryParserTest extends TestCase {
     assertIn(qe, item)
   }
 
+  @Test
   def testLessThan(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' < '001']")
     // No attribute1 at all means false
@@ -46,6 +50,7 @@ class QueryParserTest extends TestCase {
     assertIn(qe, item)
   }
 
+  @Test
   def testGreaterThan(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' > '001']")
     // No attribute1 at all means false
@@ -58,6 +63,7 @@ class QueryParserTest extends TestCase {
     assertIn(qe, item)
   }
 
+  @Test
   def testLessThanOrEqualTo(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' <= '001']")
     // No attribute1 at all means false
@@ -70,6 +76,7 @@ class QueryParserTest extends TestCase {
     assertIn(qe, item)
   }
 
+  @Test
   def testGreaterThanOrEqualTo(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' >= '001']")
     // No attribute1 at all means false
@@ -82,6 +89,7 @@ class QueryParserTest extends TestCase {
     assertIn(qe, item)
   }
 
+  @Test
   def testStartsWith(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' starts-with 'a']")
     // No attribute1 at all means false
@@ -94,6 +102,7 @@ class QueryParserTest extends TestCase {
     assertIn(qe, item)
   }
 
+  @Test
   def testDoesNotStartWith(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' does-not-start-with 'a']")
     // No attribute1 at all means false
@@ -106,6 +115,7 @@ class QueryParserTest extends TestCase {
     assertIn(qe, item)
   }
 
+  @Test
   def testAnd(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' > '1' and 'attribute1' < '5']")
     // No attribute1 or attribute2 at all means false
@@ -118,6 +128,7 @@ class QueryParserTest extends TestCase {
     assertNotIn(qe, item)
   }
 
+  @Test
   def testAndNamesMustMatch(): Unit = {
     try {
       val qe = QueryParser.makeQueryEval("['attribute1' = 'value1' and 'attribute2' = 'value2']")
@@ -128,6 +139,7 @@ class QueryParserTest extends TestCase {
     }
   }
 
+  @Test
   def testOr(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' < '5' or 'attribute1' > '7']")
     // No attribute1 means false
@@ -140,6 +152,7 @@ class QueryParserTest extends TestCase {
     assertNotIn(qe, item)
   }
   
+  @Test
   def testNot(): Unit = {
     val qe = QueryParser.makeQueryEval("not ['attribute1' = 'value1']")
     // No attribute1 at all matches
@@ -152,6 +165,7 @@ class QueryParserTest extends TestCase {
     assertNotIn(qe, item)
   }
 
+  @Test
   def testCrazyAnd(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' = 'value1' and 'attribute1' = 'value2']")
     item.put("attribute1", "value1", true)
@@ -160,6 +174,7 @@ class QueryParserTest extends TestCase {
     assertNotIn(qe, item)
   }
 
+  @Test
   def testIntersection(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' = 'value1'] intersection ['attribute2' = 'value2']")
     item.put("attribute1", "value1", true)
@@ -169,6 +184,7 @@ class QueryParserTest extends TestCase {
     assertNotIn(qe, item2)
   }
 
+  @Test
   def testIntersection2(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' = 'value2'] intersection ['attribute2' >= 'value2'] sort 'attribute2'")
     item.put("attribute1", "value1", true)
@@ -176,6 +192,7 @@ class QueryParserTest extends TestCase {
     assertNotIn(qe, item)
   }
 
+  @Test
   def testPrecendence(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' = 'value1'] intersection ['attribute2' = 'value2'] union ['attribute3' = 'value3']")
     // could be ((a && b) || c) <-- this one is right
@@ -186,6 +203,7 @@ class QueryParserTest extends TestCase {
     assertIn(qe, item)
   }
 
+  @Test
   def testNotBindsBeforeIntersection(): Unit = {
     val qe = QueryParser.makeQueryEval("not ['attribute1' = 'value1'] intersection ['attribute2' = 'value2']")
     item.put("attribute1", "value1", true)
@@ -196,6 +214,7 @@ class QueryParserTest extends TestCase {
     assertIn(qe, item2)
   }
 
+  @Test
   def testUnion(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' = 'value1'] union ['attribute2' = 'value2']")
     item.put("attribute1", "value1", true)
@@ -204,6 +223,7 @@ class QueryParserTest extends TestCase {
     assertIn(qe, item2)
   }
 
+  @Test
   def testSort(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' > '0'] sort 'attribute1'")
     item.put("attribute1", "2", true)
@@ -215,6 +235,7 @@ class QueryParserTest extends TestCase {
     assertEquals(item, sorted(1))
   }
 
+  @Test
   def testSortDesc(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' > '0'] sort 'attribute1' desc")
     item.put("attribute1", "1", true)
@@ -226,6 +247,7 @@ class QueryParserTest extends TestCase {
     assertEquals(item, sorted(1))
   }
 
+  @Test
   def testSortAsc(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' > '0'] sort 'attribute1' asc")
     item.put("attribute1", "2", true)
@@ -237,6 +259,7 @@ class QueryParserTest extends TestCase {
     assertEquals(item, sorted(1))
   }
   
+  @Test
   def testSortIntersection(): Unit = {
     val qe = QueryParser.makeQueryEval("['attribute1' > '0'] intersection ['attribute2' > '0'] sort 'attribute1' asc")
     item.put("attribute1", "2", true)
@@ -250,6 +273,7 @@ class QueryParserTest extends TestCase {
     assertEquals(item, sorted(1))
   }
 
+  @Test
   def testSortFailedIfOtherNonQueriedAttribute(): Unit = {
     try {
       val qe = QueryParser.makeQueryEval("['attribute1' > '0'] sort 'attribute2'")
@@ -260,6 +284,7 @@ class QueryParserTest extends TestCase {
     }
   }
 
+  @Test
   def testSortFailedIfQueriedAttributeWasNegated(): Unit = {
     try {
       val qe = QueryParser.makeQueryEval("not ['attribute1' > '0'] sort 'attribute1'")
@@ -270,6 +295,7 @@ class QueryParserTest extends TestCase {
     }
   }
 
+  @Test
   def testKeyWithUnderscores(): Unit = {
     val qe = QueryParser.makeQueryEval("['foo_bar' = 'value1']")
     item.put("foo_bar", "value1", true)

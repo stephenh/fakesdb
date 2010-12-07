@@ -1,14 +1,16 @@
 package fakesdb
 
-import junit.framework.Assert._
+import org.junit._
+import org.junit.Assert._
 
 class PutAttributesTest extends AbstractFakeSdbTest {
 
-  override def setUp(): Unit = {
-    super.setUp
+  @Before
+  def createDomain(): Unit = {
     sdb.createDomain("domaina")
   }
 
+  @Test
   def testPutOne(): Unit = {
     add(domaina, "itema", "a" -> "1")
     val attrs = domaina.getItem("itema").getAttributes
@@ -17,6 +19,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
     assertEquals("1", attrs.get(0).getValue)
   }
 
+  @Test
   def testPutMultipleValues(): Unit = {
     add(domaina, "itema", "a" -> "1", "a" -> "2")
     val attrs = domaina.getItem("itema").getAttributes
