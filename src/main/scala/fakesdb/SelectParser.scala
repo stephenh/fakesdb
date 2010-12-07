@@ -169,7 +169,7 @@ class SelectLexical extends StdLexical {
 
   // Wow this works--inline acceptSeq and acceptIf, but adds _.toLowerCase
   def acceptInsensitiveSeq[ES <% Iterable[Elem]](es: ES): Parser[List[Elem]] =
-    es.foldRight[Parser[List[Elem]]](success(Nil)){(x, pxs) => acceptIf(_.toLowerCase == x)("`"+x+"' expected but " + _ + " found") ~ pxs ^^ mkList}
+    es.foldRight[Parser[List[Elem]]](success(Nil)){(x, pxs) => acceptIf(_.toLower == x)("`"+x+"' expected but " + _ + " found") ~ pxs ^^ mkList}
 }
 
 object SelectParser extends StandardTokenParsers {
