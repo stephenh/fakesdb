@@ -1,17 +1,18 @@
 package fakesdb
 
-import junit.framework.TestCase
+import org.junit._
 import com.xerox.amazonws.sdb.ItemAttribute
 import com.xerox.amazonws.sdb.SimpleDB
 
-abstract class AbstractFakeSdbTest extends TestCase {
+abstract class AbstractFakeSdbTest {
   
   // typica does not respect ports 9999
   // val sdb = new SimpleDB(System.getenv("AWS_ACCESS_KEY_ID"), System.getenv("AWS_SECRET_ACCESS_KEY"), false)
   val sdb = new SimpleDB("ignored", "ignored", false, "127.0.0.1")
   val domaina = sdb.getDomain("domaina")
 
-  override def setUp(): Unit = {
+  @Before
+  def setUp(): Unit = {
     flush()
   }
 

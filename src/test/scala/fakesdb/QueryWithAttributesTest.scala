@@ -1,20 +1,23 @@
 package fakesdb
 
-import junit.framework.Assert._
+import org.junit._
+import org.junit.Assert._
 import com.xerox.amazonws.sdb.ItemAttribute
 
 class QueryWithAttributesTest extends AbstractFakeSdbTest {
 
-  override def setUp(): Unit = {
-    super.setUp
+  @Before
+  def createDomain(): Unit = {
     sdb.createDomain("domaina")
   }
 
+  @Test
   def testEmpty(): Unit = {
     val results = domaina.listItemsWithAttributes(null, null, null, 0)
     assertEquals(0, results.getItems.size)
   }
 
+  @Test
   def testEverything(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "2")
     add(domaina, "itemb", "a" -> "3")
@@ -28,6 +31,7 @@ class QueryWithAttributesTest extends AbstractFakeSdbTest {
     assertEquals("3", results.getItems.get("itemb").get(0).getValue)
   }
 
+  @Test
   def testQueryOneWithAllAttributes(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "2")
     add(domaina, "itemb", "a" -> "3")
@@ -39,6 +43,7 @@ class QueryWithAttributesTest extends AbstractFakeSdbTest {
     assertEquals("2", results.getItems.get("itema").get(1).getValue)
   }
 
+  @Test
   def testQueryOneWithSomeAttributes(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "2")
     add(domaina, "itemb", "a" -> "3")
@@ -51,6 +56,7 @@ class QueryWithAttributesTest extends AbstractFakeSdbTest {
     assertEquals("2", results.getItems.get("itema").get(0).getValue)
   }
 
+  @Test
   def testQueryOneWithNoneOfTheAttributes(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "2")
     add(domaina, "itemb", "a" -> "1") // both meet the where clause
@@ -63,6 +69,7 @@ class QueryWithAttributesTest extends AbstractFakeSdbTest {
     assertEquals("2", results.getItems.get("itema").get(0).getValue)
   }
 
+  @Test
   def testSort(): Unit = {
     add(domaina, "itema", "a" -> "2")
     add(domaina, "itemb", "a" -> "1")

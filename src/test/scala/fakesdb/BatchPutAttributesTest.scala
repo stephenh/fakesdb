@@ -1,15 +1,17 @@
 package fakesdb
 
-import junit.framework.Assert._
+import org.junit._
+import org.junit.Assert._
 import com.xerox.amazonws.sdb.ItemAttribute
 
 class BatchPutAttributesTest extends AbstractFakeSdbTest {
 
-  override def setUp(): Unit = {
-    flush()
+  @Before
+  def createDomain(): Unit = {
     sdb.createDomain("domaina")
   }
 
+  @Test
   def testPut(): Unit = {
     val as = new java.util.ArrayList[ItemAttribute]()
     as.add(new ItemAttribute("a", "1", true))

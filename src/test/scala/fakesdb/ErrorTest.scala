@@ -1,6 +1,6 @@
 package fakesdb
 
-import junit.framework.Assert._
+import org.junit.Assert._
 import com.xerox.amazonws.sdb.ItemAttribute
 import com.xerox.amazonws.sdb.SimpleDB
 

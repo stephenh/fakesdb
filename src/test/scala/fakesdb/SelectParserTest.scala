@@ -1,23 +1,26 @@
 package fakesdb
 
-import junit.framework.Assert._
-import junit.framework.TestCase
+import org.junit._
+import org.junit.Assert._
 
-class SelectParserTest extends TestCase {
+class SelectParserTest {
 
   val data = new Data
   var domaina: Domain = null
 
-  override def setUp(): Unit = {
+  @Before
+  def setUp(): Unit = {
     data.flush
     domaina = data.getOrCreateDomain("domaina")
   }
 
+  @Test
   def testEmptyFrom(): Unit = {
     val se = SelectParser.makeSelectEval("select * from domaina")
     assertEquals(0, se.select(data).size)
   }
 
+  @Test
   def testFromWithData(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itema").put("b", "2", true)
@@ -28,6 +31,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itemb", List(("c", "3"))), results(1))
   }
   
+  @Test
   def testFromWithOneAttribute(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itema").put("b", "2", true)
@@ -43,6 +47,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("b", "2"))), results2(0))
   }
 
+  @Test
   def testFromWithOneAttributeWithMultipleValues(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itema").put("a", "1", false)
@@ -51,6 +56,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"), ("a", "1"))), results(0))
   }
 
+  @Test
   def testFromWithTwoAttributes(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itema").put("b", "2", true)
@@ -61,6 +67,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itemb", List(("a", "3"))), results(1))
   }
 
+  @Test
   def testFromCount(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     val results = SelectParser.makeSelectEval("select count(*) from domaina").select(data)
@@ -68,13 +75,15 @@ class SelectParserTest extends TestCase {
     assertEquals(("Domain", List(("Count", "1"))), results(0))
   }
 
+  @Test
   def testFromCountUpperCase(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     val results = SelectParser.makeSelectEval("SELECT COUNT(*) FROM domaina").select(data)
     assertEquals(1, results.size)
-    assertEquals(("domaina", List(("Count", "1"))), results(0))
+    assertEquals(("Domain", List(("Count", "1"))), results(0))
   }
 
+  @Test
   def testFromItemName(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     val results = SelectParser.makeSelectEval("select itemName(), a from domaina").select(data)
@@ -82,6 +91,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("itemName()", "itema"), ("a", "1"))), results(0))
   }
 
+  @Test
   def testWhereEquals(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
@@ -90,6 +100,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"))), results(0))
   }
 
+  @Test
   def testWhereNotEquals(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
@@ -98,6 +109,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itemb", List(("a", "2"))), results(0))
   }
 
+  @Test
   def testWhereGreaterThan(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
@@ -106,6 +118,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itemb", List(("a", "2"))), results(0))
   }
 
+  @Test
   def testWhereLessThan(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
@@ -114,6 +127,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"))), results(0))
   }
 
+  @Test
   def testWhereGreaterThanOrEqual(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
@@ -124,6 +138,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itemc", List(("a", "3"))), results(1))
   }
 
+  @Test
   def testWhereLessThanOrEqual(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
@@ -134,6 +149,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itemb", List(("a", "2"))), results(1))
   }
 
+  @Test
   def testWhereLike(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
@@ -142,6 +158,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"))), results(0))
   }
 
+  @Test
   def testWhereNotLike(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
@@ -150,6 +167,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itemb", List(("a", "2"))), results(0))
   }
 
+  @Test
   def testWhereIsNull(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("b", "2", true)
@@ -158,6 +176,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itemb", List(("b", "2"))), results(0))
   }
   
+  @Test
   def testWhereIsNotNull(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("b", "2", true)
@@ -166,6 +185,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"))), results(0))
   }
 
+  @Test
   def testWhereBetween(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
@@ -174,6 +194,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itemb", List(("a", "2"))), results(0))
   }
 
+  @Test
   def testWhereEvery(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itema").put("a", "1", false)
@@ -184,6 +205,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"), ("a", "1"))), results(0))
   }
 
+  @Test
   def testWhereIn(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
@@ -194,6 +216,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itemb", List(("a", "2"))), results(1))
   }
 
+  @Test
   def testWhereEqualsAnd(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itema").put("b", "2", true)
@@ -203,6 +226,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"), ("b", "2"))), results(0))
   }
 
+  @Test
   def testWhereEqualsOr(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
@@ -212,6 +236,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itemb", List(("a", "2"))), results(1))
   }
 
+  @Test
   def testWhereParens(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itema").put("b", "1", true)
@@ -222,6 +247,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itemb", List(("a", "2"))), results(1))
   }
 
+  @Test
   def testOrderBy(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "2", true)
     domaina.getOrCreateItem("itemb").put("a", "1", true)
@@ -231,6 +257,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "2"))), results(1))
   }
 
+  @Test
   def testOrderByDesc(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
@@ -240,6 +267,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"))), results(1))
   }
 
+  @Test
   def testOrderByItemNameDesc(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
@@ -251,6 +279,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"))), results(2))
   }
 
+  @Test
   def testWhereCrazyAnd(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itema").put("a", "2", false)
@@ -258,6 +287,7 @@ class SelectParserTest extends TestCase {
     assertEquals(1, results.size) // FAIL
   }
 
+  @Test
   def testWhereIntersection(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itema").put("a", "2", false)
@@ -267,6 +297,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("a", "1"), ("a", "2"))), results(0))
   }
 
+  @Test
   def testKeyWithUnderscores(): Unit = {
     domaina.getOrCreateItem("itema").put("foo_bar", "1", true)
     val results = SelectParser.makeSelectEval("select * from domaina where foo_bar = '1'").select(data)
@@ -274,6 +305,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("foo_bar", "1"))), results(0))
   }
 
+  @Test
   def testCaseInsensitiveKeywords(): Unit = {
     domaina.getOrCreateItem("itema").put("foo_bar", "1", true)
     val results = SelectParser.makeSelectEval("SELECT * FROM domaina WHERE foo_bar = '1'").select(data)
@@ -281,6 +313,7 @@ class SelectParserTest extends TestCase {
     assertEquals(("itema", List(("foo_bar", "1"))), results(0))
   }
 
+  @Test
   def testLarrysQuery(): Unit = {
     val usage = data.getOrCreateDomain("dev.api-web-usage")
     val a = usage.getOrCreateItem("itema")
@@ -290,6 +323,7 @@ class SelectParserTest extends TestCase {
     assertEquals(1, results.size)
   }
 
+  @Test
   def testLimit(): Unit = {
     domaina.getOrCreateItem("itema").put("foo", "1", true)
     domaina.getOrCreateItem("itemb").put("foo", "2", true)
