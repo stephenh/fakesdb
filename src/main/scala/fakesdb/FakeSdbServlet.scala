@@ -33,15 +33,26 @@ class FakeSdbServlet extends HttpServlet {
     try {
       xml = action.handle(params).toString
     } catch {
-      case e => xml = <Response>
-        <Errors><Error><Code>foo</Code><Message>{e.getMessage}</Message><BoxUsage>0</BoxUsage></Error></Errors>
-        <RequestId>0</RequestId>
-      </Response>.toString
-      response.setStatus(400)
+      case e => {
+        xml = toXML(e).toString
+        response.setStatus(400)
+      }
     }
 
     response.setContentType("text/xml")
     response.getWriter.write(xml)
+  }
+  
+  private def toXML(t: Throwable) = {
+    val code = t match {
+      case se: SDBException => se.code
+      case _ => "InternalError"
+    }
+    
+    <Response>
+      <Errors><Error><Code>{code}</Code><Message>{t.getMessage}</Message><BoxUsage>0</BoxUsage></Error></Errors>
+      <RequestId>0</RequestId>
+    </Response>    
   }
 
   override def doPost(request: HttpServletRequest, response: HttpServletResponse): Unit = doGet(request, response)
