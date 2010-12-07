@@ -72,7 +72,7 @@ class SelectParserTest extends TestCase {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     val results = SelectParser.makeSelectEval("SELECT COUNT(*) FROM domaina").select(data)
     assertEquals(1, results.size)
-    assertEquals(("domaina", List(("Count", "1"))), results(0))
+    assertEquals(("Domain", List(("Count", "1"))), results(0))
   }
 
   def testFromItemName(): Unit = {

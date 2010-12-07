@@ -159,19 +159,23 @@ case class SimpleOrderEval(name: String, way: String) extends OrderEval {
 class SelectLexical extends StdLexical {
   override def token: Parser[Token] =
    ( accept("itemName()".toList) ^^ { x => Identifier("itemName()") }
-   | accept("count(*)".toList) ^^ { x => Keyword("count(*)") }
+   | acceptInsensitiveSeq("count(*)".toList) ^^ { x => Keyword("count(*)") }
    | letter ~ rep( letter | digit | '_' | '.' | '-' ) ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
    | super.token
   )
   // Allow case insensitive keywords by lower casing everything
   override protected def processIdent(name: String) =
     if (reserved contains name.toLowerCase) Keyword(name.toLowerCase) else Identifier(name)
+
+  // Wow this works--inline acceptSeq and acceptIf, but adds _.toLowerCase
+  def acceptInsensitiveSeq[ES <% Iterable[Elem]](es: ES): Parser[List[Elem]] =
+    es.foldRight[Parser[List[Elem]]](success(Nil)){(x, pxs) => acceptIf(_.toLowerCase == x)("`"+x+"' expected but " + _ + " found") ~ pxs ^^ mkList}
 }
 
 object SelectParser extends StandardTokenParsers {
   override val lexical = new SelectLexical
   lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=", "(", ")", "`")
-  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every", "in", "order", "by", "asc", "desc", "intersection", "limit")
+  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every", "in", "order", "by", "asc", "desc", "intersection", "limit", "count(*)")
 
   def expr = ("select" ~> outputList) ~ (("from" ~> ident) | ("from" ~> "`" ~> ident <~ "`")) ~ whereClause ~ order ~ limit ^^ { case ol ~ i ~ w ~ o ~ l => SelectEval(ol, i, w, o, l) }
 
@@ -208,9 +212,9 @@ object SelectParser extends StandardTokenParsers {
   def op = "=" | "!=" | ">" | "<" | ">=" | "<=" | "like" | "not" ~ "like" ^^ { case n ~ l => "not-like" }
 
   def outputList: Parser[OutputEval] =
-    ( "*" ^^ { case s => new AllOutput }
+    ( "*" ^^ { _ => new AllOutput }
     | "count(*)" ^^ { _ => new CountOutput }
-    | repsep(ident, ",") ^^ { attrNames: List[String] => CompoundOutput(attrNames) }
+    | repsep(ident, ",") ^^ { attrNames => CompoundOutput(attrNames) }
   )
 
   def makeSelectEval(input: String): SelectEval = {
