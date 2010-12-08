@@ -163,9 +163,12 @@ class SelectLexical extends StdLexical {
    | acceptInsensitiveSeq("count(*)".toList) ^^^ { Keyword("count(*)") }
    | '\'' ~> rep(chrWithDoubleTicks) <~ '\'' ^^ { chars => StringLit(chars mkString "") }
    | '"' ~> rep(chrWithDoubleQuotes) <~ '"' ^^ { chars => StringLit(chars mkString "") }
-   | letter ~ rep( letter | digit | '_' | '.' | '-' ) ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
+   | '`' ~> rep(chrWithDoubleBackTicks) <~ '`' ^^ { chars => processIdent(chars mkString "") }
    | super.token
   )
+
+  // Add $ to letters and _ as acceptable first characters of unquoted identifiers
+  override def identChar = letter | elem('_') | elem('$')
 
   // Allow case insensitive keywords by lower casing everything
   override protected def processIdent(name: String) =
@@ -178,6 +181,8 @@ class SelectLexical extends StdLexical {
   def chrWithDoubleTicks = ('\'' ~ '\'') ^^^ '\'' | chrExcept('\'', EofCh)
 
   def chrWithDoubleQuotes = ('"' ~ '"') ^^^ '"' | chrExcept('"', EofCh)
+
+  def chrWithDoubleBackTicks = ('`' ~ '`') ^^^ '`' | chrExcept('`', EofCh)
 
 }
 

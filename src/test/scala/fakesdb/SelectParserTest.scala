@@ -356,4 +356,28 @@ class SelectParserTest {
     assertEquals(("itemc", List(("foo", "3"))), results2(0))
     assertEquals(("itemb", List(("foo", "2"))), results2(1))
   }
+
+  @Test
+  def testAttributeDoubleBacktick(): Unit = {
+    domaina.getOrCreateItem("itema").put("a`a", "1", true)
+    val results = SelectParser.makeSelectEval("select `a``a` from domaina where `a``a` = '1'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itema", List(("a`a", "1"))), results(0))
+  }
+
+  @Test
+  def testAttributeLegalChars(): Unit = {
+    domaina.getOrCreateItem("itema").put("a1$_", "1", true)
+    val results = SelectParser.makeSelectEval("select a1$_ from domaina where a1$_ = '1'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itema", List(("a1$_", "1"))), results(0))
+  }
+
+  @Test
+  def testAttributeLegalCharsInTheFirstPosition(): Unit = {
+    domaina.getOrCreateItem("itema").put("$_", "1", true)
+    val results = SelectParser.makeSelectEval("select $_ from domaina where $_ = '1'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itema", List(("$_", "1"))), results(0))
+  }
 }
