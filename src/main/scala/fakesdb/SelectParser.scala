@@ -156,7 +156,6 @@ case class SimpleOrderEval(name: String, way: String) extends OrderEval {
   }
 }
 
-// Use our own lexer because the "()" in "itemName()"
 class SelectLexical extends StdLexical {
   override def token: Parser[Token] =
    ( accept("itemName()".toList) ^^^ { Identifier("itemName()") }
