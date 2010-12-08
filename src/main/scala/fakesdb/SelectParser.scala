@@ -158,8 +158,8 @@ case class SimpleOrderEval(name: String, way: String) extends OrderEval {
 // Use our own lexer because the "()" in "itemName()"
 class SelectLexical extends StdLexical {
   override def token: Parser[Token] =
-   ( accept("itemName()".toList) ^^ { x => Identifier("itemName()") }
-   | acceptInsensitiveSeq("count(*)".toList) ^^ { x => Keyword("count(*)") }
+   ( accept("itemName()".toList) ^^^ { Identifier("itemName()") }
+   | acceptInsensitiveSeq("count(*)".toList) ^^^ { Keyword("count(*)") }
    | letter ~ rep( letter | digit | '_' | '.' | '-' ) ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
    | super.token
   )
@@ -212,8 +212,8 @@ object SelectParser extends StandardTokenParsers {
   def op = "=" | "!=" | ">" | "<" | ">=" | "<=" | "like" | "not" ~ "like" ^^ { case n ~ l => "not-like" }
 
   def outputList: Parser[OutputEval] =
-    ( "*" ^^ { _ => new AllOutput }
-    | "count(*)" ^^ { _ => new CountOutput }
+    ( "*" ^^^ { new AllOutput }
+    | "count(*)" ^^^ { new CountOutput }
     | repsep(ident, ",") ^^ { attrNames => CompoundOutput(attrNames) }
   )
 
