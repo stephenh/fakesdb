@@ -188,7 +188,10 @@ class SelectLexical extends StdLexical {
 object SelectParser extends StandardTokenParsers {
   override val lexical = new SelectLexical
   lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=", "(", ")", "`")
-  lexical.reserved ++= List("select", "from", "where", "and", "or", "like", "not", "is", "null", "between", "every", "in", "order", "by", "asc", "desc", "intersection", "limit", "count(*)")
+  lexical.reserved ++= List(
+    "select", "from", "where", "and", "or", "like", "not", "is", "null", "between",
+    "every", "in", "order", "by", "asc", "desc", "intersection", "limit", "count(*)"
+  )
 
   def expr = ("select" ~> outputList) ~ (("from" ~> ident) | ("from" ~> "`" ~> ident <~ "`")) ~ whereClause ~ order ~ limit ^^ { case ol ~ i ~ w ~ o ~ l => SelectEval(ol, i, w, o, l) }
 
