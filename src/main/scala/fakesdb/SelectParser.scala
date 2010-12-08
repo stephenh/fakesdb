@@ -196,7 +196,7 @@ object SelectParser extends StandardTokenParsers {
 
   def order: Parser[OrderEval] =
     ( "order" ~> "by" ~> ident ~ ("asc" | "desc") ^^ { case i ~ way => SimpleOrderEval(i, way) }
-    | "order" ~> "by" ~> ident ^^ { case i => SimpleOrderEval(i, "asc") }
+    | "order" ~> "by" ~> ident ^^ { i => SimpleOrderEval(i, "asc") }
     | success(NoopOrder())
   )
 
@@ -216,7 +216,7 @@ object SelectParser extends StandardTokenParsers {
 
   def simplePredicate: Parser[WhereEval] =
     ( ident <~ "is" <~ "null" ^^ { i => IsNullEval(i, true) }
-    | ident <~ "is" <~ "not" <~ "null" ^^ { case i => IsNullEval(i, false) }
+    | ident <~ "is" <~ "not" <~ "null" ^^ { i => IsNullEval(i, false) }
     | ident ~ ("between" ~> stringLit) ~ ("and" ~> stringLit) ^^ { case i ~ a ~ b => IsBetweenEval(i, a, b) }
     | ident ~ ("in" ~> "(" ~> repsep(stringLit, ",") <~ ")") ^^ { case i ~ strs => InEval(i, strs) }
     | ("every" ~> "(" ~> ident <~ ")") ~ op ~ stringLit ^^ { case i ~ o ~ v => EveryEval(i, o, v)}
