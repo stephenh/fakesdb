@@ -193,7 +193,7 @@ object SelectParser extends StandardTokenParsers {
     "every", "in", "order", "by", "asc", "desc", "intersection", "limit", "count(*)"
   )
 
-  def expr = ("select" ~> outputList) ~ (("from" ~> ident) | ("from" ~> "`" ~> ident <~ "`")) ~ whereClause ~ order ~ limit ^^ { case ol ~ i ~ w ~ o ~ l => SelectEval(ol, i, w, o, l) }
+  def expr = ("select" ~> outputList) ~ ("from" ~> ident) ~ whereClause ~ order ~ limit ^^ { case ol ~ i ~ w ~ o ~ l => SelectEval(ol, i, w, o, l) }
 
   def order: Parser[OrderEval] =
     ( "order" ~> "by" ~> ident ~ ("asc" | "desc") ^^ { case i ~ way => SimpleOrderEval(i, way) }
