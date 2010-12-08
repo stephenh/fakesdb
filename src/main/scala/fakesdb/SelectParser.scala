@@ -182,7 +182,6 @@ class SelectLexical extends StdLexical {
   def chrWithDoubleQuotes = ('"' ~ '"') ^^^ '"' | chrExcept('"', EofCh)
 
   def chrWithDoubleBackTicks = ('`' ~ '`') ^^^ '`' | chrExcept('`', EofCh)
-
 }
 
 object SelectParser extends StandardTokenParsers {
@@ -202,7 +201,7 @@ object SelectParser extends StandardTokenParsers {
   )
 
   def limit: Parser[LimitEval] =
-    ( "limit" ~ numericLit ^^ { case l ~ num => SomeLimit(num.toInt) }
+    ( "limit" ~> numericLit ^^ { num => SomeLimit(num.toInt) }
     | success(NoopLimit())
   )
 
@@ -216,16 +215,16 @@ object SelectParser extends StandardTokenParsers {
   )
 
   def simplePredicate: Parser[WhereEval] =
-    ( ident ~ "is" ~ "null" ^^ { case i ~ is ~ nul => IsNullEval(i, true) }
-    | ident ~ "is" ~ "not" ~ "null" ^^ { case i ~ is ~ no ~ nul => IsNullEval(i, false) }
-    | ident ~ "between" ~ stringLit ~ "and" ~ stringLit ^^ { case i ~ bw ~ a ~ an ~ b => IsBetweenEval(i, a, b) }
-    | ident ~ "in" ~ "(" ~ repsep(stringLit, ",") ~ ")" ^^ { case i ~ instr ~ lp ~ strs ~ rp => InEval(i, strs) }
-    | "every" ~ "(" ~ ident ~ ")" ~ op ~ stringLit ^^ { case estr ~ lp ~ i ~ rp ~ o ~ v => EveryEval(i, o, v)}
+    ( ident <~ "is" <~ "null" ^^ { i => IsNullEval(i, true) }
+    | ident <~ "is" <~ "not" <~ "null" ^^ { case i => IsNullEval(i, false) }
+    | ident ~ ("between" ~> stringLit) ~ ("and" ~> stringLit) ^^ { case i ~ a ~ b => IsBetweenEval(i, a, b) }
+    | ident ~ ("in" ~> "(" ~> repsep(stringLit, ",") <~ ")") ^^ { case i ~ strs => InEval(i, strs) }
+    | ("every" ~> "(" ~> ident <~ ")") ~ op ~ stringLit ^^ { case i ~ o ~ v => EveryEval(i, o, v)}
     | ident ~ op ~ stringLit ^^ { case i ~ o ~ v => SimpleWhereEval(i, o, v) }
     | "(" ~> where <~ ")"
   )
   def setOp = "and" | "or" | "intersection"
-  def op = "=" | "!=" | ">" | "<" | ">=" | "<=" | "like" | "not" ~ "like" ^^ { case n ~ l => "not-like" }
+  def op = "=" | "!=" | ">" | "<" | ">=" | "<=" | "like" | "not" ~ "like" ^^^ { "not-like" }
 
   def outputList: Parser[OutputEval] =
     ( "*" ^^^ { new AllOutput }
