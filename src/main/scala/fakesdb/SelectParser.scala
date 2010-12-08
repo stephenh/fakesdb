@@ -186,7 +186,7 @@ class SelectLexical extends StdLexical {
 
 object SelectParser extends StandardTokenParsers {
   override val lexical = new SelectLexical
-  lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=", "(", ")", "`")
+  lexical.delimiters ++= List("*", ",", "=", "!=", ">", "<", ">=", "<=", "(", ")")
   lexical.reserved ++= List(
     "select", "from", "where", "and", "or", "like", "not", "is", "null", "between",
     "every", "in", "order", "by", "asc", "desc", "intersection", "limit", "count(*)"
