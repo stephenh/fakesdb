@@ -4,6 +4,7 @@ import scala.collection.mutable.ListBuffer
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.lexical._
+import scala.util.parsing.input.CharArrayReader.EofCh
 
 case class SelectEval(output: OutputEval, from: String, where: WhereEval, order: OrderEval, limit: LimitEval)  {
   def select(data: Data): List[(String, List[(String,String)])] = {
@@ -160,9 +161,12 @@ class SelectLexical extends StdLexical {
   override def token: Parser[Token] =
    ( accept("itemName()".toList) ^^^ { Identifier("itemName()") }
    | acceptInsensitiveSeq("count(*)".toList) ^^^ { Keyword("count(*)") }
+   | '\'' ~> rep(chrWithDoubleTicks) <~ '\'' ^^ { chars => StringLit(chars mkString "") }
+   | '"' ~> rep(chrWithDoubleQuotes) <~ '"' ^^ { chars => StringLit(chars mkString "") }
    | letter ~ rep( letter | digit | '_' | '.' | '-' ) ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
    | super.token
   )
+
   // Allow case insensitive keywords by lower casing everything
   override protected def processIdent(name: String) =
     if (reserved contains name.toLowerCase) Keyword(name.toLowerCase) else Identifier(name)
@@ -170,6 +174,11 @@ class SelectLexical extends StdLexical {
   // Wow this works--inline acceptSeq and acceptIf, but adds _.toLowerCase
   def acceptInsensitiveSeq[ES <% Iterable[Elem]](es: ES): Parser[List[Elem]] =
     es.foldRight[Parser[List[Elem]]](success(Nil)){(x, pxs) => acceptIf(_.toLower == x)("`"+x+"' expected but " + _ + " found") ~ pxs ^^ mkList}
+
+  def chrWithDoubleTicks = ('\'' ~ '\'') ^^^ '\'' | chrExcept('\'', EofCh)
+
+  def chrWithDoubleQuotes = ('"' ~ '"') ^^^ '"' | chrExcept('"', EofCh)
+
 }
 
 object SelectParser extends StandardTokenParsers {

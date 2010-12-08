@@ -101,6 +101,24 @@ class SelectParserTest {
   }
 
   @Test
+  def testWhereDoubleTicks(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1'1", true)
+    domaina.getOrCreateItem("itemb").put("a", "2'2", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a = '1''1'").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itema", List(("a", "1'1"))), results(0))
+  }
+
+  @Test
+  def testWhereDoubleQuotes(): Unit = {
+    domaina.getOrCreateItem("itema").put("a", "1\"1", true)
+    domaina.getOrCreateItem("itemb").put("a", "2\"2", true)
+    val results = SelectParser.makeSelectEval("select * from domaina where a = \"1\"\"1\"").select(data)
+    assertEquals(1, results.size)
+    assertEquals(("itema", List(("a", "1\"1"))), results(0))
+  }
+
+  @Test
   def testWhereNotEquals(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
