@@ -163,7 +163,7 @@ class SelectLexical extends StdLexical {
    | acceptInsensitiveSeq("count(*)".toList) ^^^ { Keyword("count(*)") }
    | '\'' ~> rep(chrWithDoubleTicks) <~ '\'' ^^ { chars => StringLit(chars mkString "") }
    | '"' ~> rep(chrWithDoubleQuotes) <~ '"' ^^ { chars => StringLit(chars mkString "") }
-   | '`' ~> rep(chrWithDoubleBackTicks) <~ '`' ^^ { chars => processIdent(chars mkString "") }
+   | '`' ~> rep(chrWithDoubleBackTicks) <~ '`' ^^ { chars => Identifier(chars mkString "") }
    | super.token
   )
 
