@@ -14,23 +14,23 @@ class FakeSdbServlet extends HttpServlet {
       return
     }
 
-    val action = params("Action") match {
-      case "CreateDomain" => new CreateDomain(data)
-      case "DeleteDomain" => new DeleteDomain(data)
-      case "DomainMetadata" => new DomainMetadata(data)
-      case "ListDomains" => new ListDomains(data)
-      case "GetAttributes" => new GetAttributes(data)
-      case "PutAttributes" => new PutAttributes(data)
-      case "BatchPutAttributes" => new BatchPutAttributes(data)
-      case "DeleteAttributes" => new DeleteAttributes(data)
-      case "Query" => new Query(data)
-      case "QueryWithAttributes" => new QueryWithAttributes(data)
-      case "Select" => new Select(data)
-      case other => error("Invalid action "+other)
-    }
-
     var xml = ""
     try {
+      val action = params("Action") match {
+        case "CreateDomain" => new CreateDomain(data)
+        case "DeleteDomain" => new DeleteDomain(data)
+        case "DomainMetadata" => new DomainMetadata(data)
+        case "ListDomains" => new ListDomains(data)
+        case "GetAttributes" => new GetAttributes(data)
+        case "PutAttributes" => new PutAttributes(data)
+        case "BatchPutAttributes" => new BatchPutAttributes(data)
+        case "DeleteAttributes" => new DeleteAttributes(data)
+        case "Query" => if (params("Version") >= "2009-04-14") throw new InvalidActionException("Query") else new Query(data)
+        case "QueryWithAttributes" => if (params("Version") >= "2009-04-14") throw new InvalidActionException("QueryWithAttributes") else new QueryWithAttributes(data)
+        case "Select" => new Select(data)
+        case other => throw new InvalidActionException(other)
+      }
+
       xml = action.handle(params).toString
     } catch {
       case e => {
@@ -57,4 +57,6 @@ class FakeSdbServlet extends HttpServlet {
 
   override def doPost(request: HttpServletRequest, response: HttpServletResponse): Unit = doGet(request, response)
 
+  class InvalidActionException(action: String)
+    extends SDBException("InvalidAction", "The action %s is not valid for this web service.".format(action))
 }

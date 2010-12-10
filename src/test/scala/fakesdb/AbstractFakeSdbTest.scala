@@ -4,8 +4,15 @@ import org.junit._
 import com.xerox.amazonws.sdb.ItemAttribute
 import com.xerox.amazonws.sdb.SimpleDB
 
+object AbstractFakeSdbTest {
+  val jetty = Jetty(8080)
+  jetty.server.start()
+}
+
 abstract class AbstractFakeSdbTest {
-  
+
+  // start jetty
+  AbstractFakeSdbTest.jetty
   // typica does not respect ports 9999
   // val sdb = new SimpleDB(System.getenv("AWS_ACCESS_KEY_ID"), System.getenv("AWS_SECRET_ACCESS_KEY"), false)
   val sdb = new SimpleDB("ignored", "ignored", false, "127.0.0.1")
