@@ -30,4 +30,13 @@ class PutAttributesTest extends AbstractFakeSdbTest {
     assertEquals("2", attrs.get(1).getValue)
   }
 
+  @Test
+  def testPutMultipleValuesWithSameValue(): Unit = {
+    add(domaina, "itema", "a" -> "1", "a" -> "1")
+    val attrs = domaina.getItem("itema").getAttributes
+    assertEquals(1, attrs.size)
+    assertEquals("a", attrs.get(0).getName)
+    assertEquals("1", attrs.get(0).getValue)
+  }
+
 }
