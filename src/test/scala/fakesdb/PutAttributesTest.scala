@@ -76,6 +76,14 @@ class PutAttributesTest extends AbstractFakeSdbTest {
     })
   }
 
+  @Test
+  def testConditionalPutDoesNotExist(): Unit = {
+    add(domaina, "itema", "a" -> "1")
+    assertFails("ConditionalCheckFailed", "Attribute (a) value exists", {
+      add(domaina, "itema", doesNotExist("a"), "b" -> "1")
+    })
+  }
+
   private def addLots(itemName: String, number: Int): Unit = {
     val list = new java.util.ArrayList[ItemAttribute]()
     for (i <- 1.to(number)) {
