@@ -16,7 +16,9 @@ class PutAttributes(data: Data) extends Action(data) {
     checkConditionals(item, params)
 
     discoverAttributes(params).foreach(a => {
-      if (item.getAttributes.size < 256) {
+      if (a._1 == "") {
+        error("Empty attribute name")
+      } else if (item.getAttributes.size < 256) {
         item.put(a._1, a._2, a._3)
       } else {
         error("Too many attributes")

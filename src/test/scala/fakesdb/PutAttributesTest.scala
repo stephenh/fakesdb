@@ -67,6 +67,16 @@ class PutAttributesTest extends AbstractFakeSdbTest {
     assertEquals(true, attrs find (_.getName == "attr257") isEmpty)
   }
 
+  @Test
+  def testFailEmptyAttributeName(): Unit = {
+    try {
+      add(domaina, "itema", "" -> "1")
+      fail
+    } catch {
+      case e: SDBException => assertEquals("Client error : Empty attribute name", e.getMessage)
+    }
+  }
+
   private def addLots(itemName: String, number: Int): Unit = {
     val list = new java.util.ArrayList[ItemAttribute]()
     for (i <- 1.to(number)) {
