@@ -69,7 +69,19 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   }
 
   @Test
-  def testConditionalPut(): Unit = {
+  def testConditionalPutSucceeds(): Unit = {
+    add(domaina, "itema", "a" -> "1")
+    add(domaina, "itema", hasValue("a", "1"), "b" -> "1")
+    val attrs = domaina.getItem("itema").getAttributes
+    assertEquals(2, attrs.size)
+    assertEquals("a", attrs.get(0).getName)
+    assertEquals("1", attrs.get(0).getValue)
+    assertEquals("b", attrs.get(1).getName)
+    assertEquals("1", attrs.get(1).getValue)
+  }
+
+  @Test
+  def testConditionalPutFailsWithWrongValue(): Unit = {
     add(domaina, "itema", "a" -> "1")
     assertFails("ConditionalCheckFailed", "Attribute (a) value is (List(1)) but was expected (2)", {
       add(domaina, "itema", hasValue("a", "2"), "b" -> "1")
@@ -89,6 +101,14 @@ class PutAttributesTest extends AbstractFakeSdbTest {
     add(domaina, "itema", "a" -> "1", "a" -> "2")
     assertFails("ConditionalCheckFailed", "Attribute (a) value is (List(1, 2)) but was expected (1)", {
       add(domaina, "itema", hasValue("a", "1"), "b" -> "1")
+    })
+  }
+
+  @Test
+  def testConditionalPutFailsAgainstInvalidAttribute(): Unit = {
+    add(domaina, "itema", "a" -> "1")
+    assertFails("AttributeDoesNotExist", "Attribute (c) does not exist", {
+      add(domaina, "itema", hasValue("c", "1"), "b" -> "1")
     })
   }
 

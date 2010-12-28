@@ -33,10 +33,10 @@ class PutAttributes(data: Data) extends Action(data) {
   private def checkConditionals(item: Item, params: Params) {
     for (condition <- discoverConditional(params)) {
       condition match {
-        case (name, None) => for (f <- item.getAttributes.find(_.name == name)) throw ConditionalCheckFailedException(condition)
+        case (name, None) => for (f <- item.getAttributes.find(_.name == name)) throw new ConditionalCheckFailedException(condition)
         case (name, Some(value)) => item.getAttributes find (_.name == name) match {
           case None => throw new AttributeDoesNotExistException(name)
-          case Some(attr) => if (attr.getValues.toList != List(value)) throw ConditionalCheckFailedException(condition, attr.getValues.toList)
+          case Some(attr) => if (attr.getValues.toList != List(value)) throw new ConditionalCheckFailedException(condition, attr.getValues.toList)
         }
       }
     }    
@@ -86,12 +86,13 @@ class PutAttributes(data: Data) extends Action(data) {
     None
   }
 
-  class ConditionalCheckFailedException(message: String) extends SDBException("ConditionalCheckFailed", message)
+  class ConditionalCheckFailedException(message: String) extends SDBException("ConditionalCheckFailed", message) {
+    def this(condition: Tuple2[String, Option[String]]) = {
+      this("Attribute (%s) value exists".format(condition._1))
+    }
 
-  object ConditionalCheckFailedException {
-    def apply(condition: Tuple2[String, Option[String]], actual: List[String] = List()) = condition match {
-      case (name, None) => new ConditionalCheckFailedException("Attribute (%s) value exists".format(name))
-      case (name, Some(value)) => new ConditionalCheckFailedException("Attribute (%s) value is (%s) but was expected (%s)".format(name, actual, value))
+    def this(condition: Tuple2[String, Option[String]], actual: List[String]) = {
+      this("Attribute (%s) value is (%s) but was expected (%s)".format(condition._1, actual, condition._2.get))
     }
   }
 
