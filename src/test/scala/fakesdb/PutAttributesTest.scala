@@ -45,36 +45,35 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testLimitInTwoRequests(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "1")
-    try {
+    assertFails("InternalError", "Too many attributes", {
       addLots("itema", 255)
-      fail
-    } catch {
-      case e: SDBException => assertEquals("Client error : Too many attributes", e.getMessage)
-    }
+    })
     val attrs = domaina.getItem("itema").getAttributes
     assertEquals(true, attrs find (_.getName == "attr255") isEmpty)
   }
 
   @Test
   def testLimitInOneRequest(): Unit = {
-    try {
+    assertFails("InternalError", "Too many attributes", {
       addLots("itema", 257)
-      fail
-    } catch {
-      case e: SDBException => assertEquals("Client error : Too many attributes", e.getMessage)
-    }
+    })
     val attrs = domaina.getItem("itema").getAttributes
     assertEquals(true, attrs find (_.getName == "attr257") isEmpty)
   }
 
   @Test
   def testFailEmptyAttributeName(): Unit = {
-    try {
+    assertFails("InternalError", "Empty attribute name", {
       add(domaina, "itema", "" -> "1")
-      fail
-    } catch {
-      case e: SDBException => assertEquals("Client error : Empty attribute name", e.getMessage)
-    }
+    })
+  }
+
+  @Test
+  def testConditionalPut(): Unit = {
+    add(domaina, "itema", "a" -> "1")
+    assertFails("ConditionalCheckFailed", "Attribute (a) value is (2) but was expected (List(1)).", {
+      add(domaina, "itema", hasValue("a", "2"), "b" -> "1")
+    })
   }
 
   private def addLots(itemName: String, number: Int): Unit = {
