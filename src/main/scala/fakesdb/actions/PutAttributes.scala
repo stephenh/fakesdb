@@ -91,7 +91,7 @@ class PutAttributes(data: Data) extends Action(data) {
   object ConditionalCheckFailedException {
     def apply(condition: Tuple2[String, Option[String]], actual: List[String] = List()) = condition match {
       case (name, None) => new ConditionalCheckFailedException("Attribute (%s) value exists".format(name))
-      case (name, Some(value)) => new ConditionalCheckFailedException("Attribute (%s) value is (%s) but was expected (%s).".format(name, actual, value))
+      case (name, Some(value)) => new ConditionalCheckFailedException("Attribute (%s) value is (%s) but was expected (%s)".format(name, actual, value))
     }
   }
 

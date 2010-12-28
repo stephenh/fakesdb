@@ -71,7 +71,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testConditionalPut(): Unit = {
     add(domaina, "itema", "a" -> "1")
-    assertFails("ConditionalCheckFailed", "Attribute (a) value is (List(1)) but was expected (2).", {
+    assertFails("ConditionalCheckFailed", "Attribute (a) value is (List(1)) but was expected (2)", {
       add(domaina, "itema", hasValue("a", "2"), "b" -> "1")
     })
   }
@@ -87,7 +87,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testConditionalPutFailsAgainstMutipleValues(): Unit = {
     add(domaina, "itema", "a" -> "1", "a" -> "2")
-    assertFails("ConditionalCheckFailed", "Attribute (a) value is (List(1, 2)) but was expected (1).", {
+    assertFails("ConditionalCheckFailed", "Attribute (a) value is (List(1, 2)) but was expected (1)", {
       add(domaina, "itema", hasValue("a", "1"), "b" -> "1")
     })
   }
