@@ -12,10 +12,17 @@ class PutAttributes(data: Data) extends Action(data) {
     val domain = parseDomain(params)
     val itemName = params.getOrElse("ItemName", error("No item name"))
     val item = domain.getOrCreateItem(itemName)
-    
+
     checkConditionals(item, params)
-  
-    discoverAttributes(params).foreach((t: (String, String, Boolean)) => item.put(t._1, t._2, t._3))
+
+    discoverAttributes(params).foreach(a => {
+      if (item.getAttributes.size < 256) {
+        item.put(a._1, a._2, a._3)
+      } else {
+        error("Too many attributes")
+      }
+    })
+
     <PutAttributesResponse xmlns="http://sdb.amazonaws.com/doc/2007-11-07/">
       {responseMetaData}
     </PutAttributesResponse>
