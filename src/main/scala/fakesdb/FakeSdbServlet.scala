@@ -25,12 +25,9 @@ class FakeSdbServlet extends HttpServlet {
         case "PutAttributes" => new PutAttributes(data)
         case "BatchPutAttributes" => new BatchPutAttributes(data)
         case "DeleteAttributes" => new DeleteAttributes(data)
-        case "Query" => if (params("Version") >= "2009-04-14") throw new InvalidActionException("Query") else new Query(data)
-        case "QueryWithAttributes" => if (params("Version") >= "2009-04-14") throw new InvalidActionException("QueryWithAttributes") else new QueryWithAttributes(data)
         case "Select" => new Select(data)
         case other => throw new InvalidActionException(other)
       }
-
       xml = action.handle(params).toString
     } catch {
       case e => {

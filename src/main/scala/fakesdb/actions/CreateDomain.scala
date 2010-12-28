@@ -14,7 +14,7 @@ class CreateDomain(data: Data) extends Action(data) {
     } else {
       data.getOrCreateDomain(domainName)
     }
-    <CreateDomainResponse xmlns="http://sdb.amazonaws.com/doc/2007-11-07/">
+    <CreateDomainResponse xmlns={namespace}>
       {responseMetaData}
     </CreateDomainResponse>
   }

@@ -42,6 +42,6 @@ class GetAttributesTest extends AbstractFakeSdbTest {
   def testGetAttributesDoesNotCreateAnItem(): Unit = {
     val attrs = domaina.getItem("itema").getAttributes
     assertEquals(0, attrs.size)
-    assertEquals(0, domaina.listItems.getItemList.size)
+    assertEquals(0, domaina.selectItems("SELECT * FROM domaina", null, true).getItems.size)
   }
 }

@@ -25,7 +25,7 @@ class PutAttributes(data: Data) extends Action(data) {
       }
     })
 
-    <PutAttributesResponse xmlns="http://sdb.amazonaws.com/doc/2007-11-07/">
+    <PutAttributesResponse xmlns={namespace}>
       {responseMetaData}
     </PutAttributesResponse>
   }

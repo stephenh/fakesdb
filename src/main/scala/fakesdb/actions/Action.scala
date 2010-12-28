@@ -16,4 +16,6 @@ abstract class Action(data: Data) {
     return data.getDomain(domainName).getOrElse(error("Invalid domain name "+domainName))
   }
 
+  protected def namespace = "http://sdb.amazonaws.com/doc/2009-04-15/"
+
 }

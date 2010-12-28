@@ -13,7 +13,7 @@ class DeleteAttributes(data: Data) extends Action(data) {
       case Some(item) => doDelete(params, domain, item)
       case _ =>
     }
-    <DeleteAttributesResponse xmlns="http://sdb.amazonaws.com/doc/2007-11-07/">
+    <DeleteAttributesResponse xmlns={namespace}>
       {responseMetaData}
     </DeleteAttributesResponse>
   }

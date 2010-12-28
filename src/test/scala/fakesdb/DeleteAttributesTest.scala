@@ -39,7 +39,7 @@ class DeleteAttributesTest extends AbstractFakeSdbTest {
     toDelete.add(new ItemAttribute("b", null, false))
     itema.deleteAttributes(toDelete)
 
-    assertEquals(0, domaina.listItems.getItemList.size)
+    assertEquals(0, domaina.selectItems("SELECT * FROM domaina", null, true).getItems.size)
   }
 
   @Test
@@ -52,7 +52,7 @@ class DeleteAttributesTest extends AbstractFakeSdbTest {
     val toDelete = new java.util.ArrayList[ItemAttribute]()
     itema.deleteAttributes(toDelete)
 
-    assertEquals(0, domaina.listItems.getItemList.size)
+    assertEquals(0, domaina.selectItems("SELECT * FROM domaina", null, true).getItems.size)
   }
 
 }

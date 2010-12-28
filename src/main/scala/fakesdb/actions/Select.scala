@@ -10,7 +10,7 @@ class Select(data: Data) extends Action(data) {
       case Some(s) => val se = SelectParser.makeSelectEval(s) ; se.select(data)
       case None => error("No select expression")
     }
-    <SelectResponse xmlns="http://sdb.amazonaws.com/doc/2007-11-07/">
+    <SelectResponse xmlns={namespace}>
       <SelectResult>
         {for (item <- items) yield
           <Item>
