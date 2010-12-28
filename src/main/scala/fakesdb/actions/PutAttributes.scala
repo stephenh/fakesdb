@@ -68,7 +68,7 @@ class PutAttributes(data: Data) extends Action(data) {
       return None
     }
     if (keys.size > 1) {
-      throw new RuntimeException("Only one condition may be specified")
+      error("Only one condition may be specified")
     }
     val name = params.get(keys.head).get
     keys.head match {
