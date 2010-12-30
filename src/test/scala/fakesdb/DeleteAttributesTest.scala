@@ -2,7 +2,9 @@ package fakesdb
 
 import org.junit._
 import org.junit.Assert._
+import com.xerox.amazonws.sdb.Condition
 import com.xerox.amazonws.sdb.ItemAttribute
+import scala.collection.JavaConversions._
 
 class DeleteAttributesTest extends AbstractFakeSdbTest {
 
@@ -18,9 +20,7 @@ class DeleteAttributesTest extends AbstractFakeSdbTest {
     val itema = domaina.getItem("itema")
     assertEquals(2, itema.getAttributes.size)
 
-    val toDelete = new java.util.ArrayList[ItemAttribute]()
-    toDelete.add(new ItemAttribute("a", null, false))
-    itema.deleteAttributes(toDelete)
+    delete("a")
 
     val now = itema.getAttributes
     assertEquals(1, now.size)
@@ -30,29 +30,64 @@ class DeleteAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testDeleteBothAttributesDeletesTheItem(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "2")
-
-    val itema = domaina.getItem("itema")
-    assertEquals(2, itema.getAttributes.size)
-
-    val toDelete = new java.util.ArrayList[ItemAttribute]()
-    toDelete.add(new ItemAttribute("a", null, false))
-    toDelete.add(new ItemAttribute("b", null, false))
-    itema.deleteAttributes(toDelete)
-
-    assertEquals(0, domaina.listItems.getItemList.size)
+    delete("a", "b")
+    assertEquals(0, domaina.selectItems("SELECT * FROM domaina", null, true).getItems.size)
   }
 
   @Test
   def testDeleteNoAttributesDeletesTheItem(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "2")
+    delete()
+    assertEquals(0, domaina.selectItems("SELECT * FROM domaina", null, true).getItems.size)
+  }
 
-    val itema = domaina.getItem("itema")
-    assertEquals(2, itema.getAttributes.size)
+  @Test
+  def testDeleteConditionalValueSuccess(): Unit = {
+    add(domaina, "itema", "a" -> "1", "b" -> "2")
+    delete(hasValue("a", "1"), "a")
+    assertHas("b" -> "2")
+  }
 
-    val toDelete = new java.util.ArrayList[ItemAttribute]()
-    itema.deleteAttributes(toDelete)
+  @Test
+  def testDeleteConditionalDoesNotExistSuccess(): Unit = {
+    add(domaina, "itema", "a" -> "1", "b" -> "2")
+    delete(doesNotExist("c"), "a")
+    assertHas("b" -> "2")
+  }
 
-    assertEquals(0, domaina.listItems.getItemList.size)
+  @Test
+  def testDeleteConditionalValueFailure(): Unit = {
+    add(domaina, "itema", "a" -> "1", "b" -> "2")
+    assertFails("ConditionalCheckFailed", "Attribute (a) value is (List(1)) but was expected (2)", {
+      delete(hasValue("a", "2"), "a")
+    })
+    assertHas("a" -> "1", "b" -> "2")
+  }
+
+  @Test
+  def testDeleteConditionalDoesNotExistFailure(): Unit = {
+    add(domaina, "itema", "a" -> "1", "b" -> "2")
+    assertFails("ConditionalCheckFailed", "Attribute (b) value exists", {
+      delete(doesNotExist("b"), "a")
+    })
+    assertHas("a" -> "1", "b" -> "2")
+  }
+
+  private def assertHas(attrs: KV*): Unit = {
+    val now = domaina.getItem("itema").getAttributes
+    assertEquals(attrs.size, now.size)
+    for (i <- 0.until(attrs.size)) {
+      assertEquals(attrs.get(i)._1, now.get(i).getName)
+      assertEquals(attrs.get(i)._2, now.get(i).getValue)
+    }
+  }
+
+  private def delete(attrNames: String*): Unit = {
+    domaina getItem("itema") deleteAttributes(attrNames.map { new ItemAttribute(_, null, false) })
+  }
+
+  private def delete(cond: Condition, attrNames: String*): Unit = {
+    domaina getItem("itema") deleteAttributes(attrNames.map { new ItemAttribute(_, null, false) }, List(cond))
   }
 
 }

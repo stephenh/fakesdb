@@ -4,16 +4,19 @@ import scala.collection.mutable.ListBuffer
 import scala.xml.NodeSeq
 import fakesdb._
 
-class DeleteAttributes(data: Data) extends Action(data) {
+class DeleteAttributes(data: Data) extends Action(data) with ConditionalChecking {
 
   def handle(params: Params): NodeSeq = {
     val domain = parseDomain(params)
     val itemName = params.getOrElse("ItemName", error("No item name"))
     val item = domain.getItem(itemName) match {
-      case Some(item) => doDelete(params, domain, item)
+      case Some(item) => {
+        checkConditionals(item, params)
+        doDelete(params, domain, item)
+      }
       case _ =>
     }
-    <DeleteAttributesResponse xmlns="http://sdb.amazonaws.com/doc/2007-11-07/">
+    <DeleteAttributesResponse xmlns={namespace}>
       {responseMetaData}
     </DeleteAttributesResponse>
   }

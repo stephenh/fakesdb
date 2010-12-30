@@ -1,8 +1,14 @@
 package fakesdb
 
 import org.junit._
+import org.junit.Assert._
+import com.xerox.amazonws.sdb.Condition
 import com.xerox.amazonws.sdb.ItemAttribute
+import com.xerox.amazonws.sdb.SDBException
 import com.xerox.amazonws.sdb.SimpleDB
+import com.xerox.amazonws.sdb.{Domain => SDomain}
+import scala.collection.JavaConversions._
+import scala.collection.mutable.HashSet
 
 object AbstractFakeSdbTest {
   val jetty = Jetty(8080)
@@ -27,16 +33,47 @@ abstract class AbstractFakeSdbTest {
     sdb.createDomain("_flush")
   }
 
-  def add(domain: com.xerox.amazonws.sdb.Domain, itemName: String, attrs: Tuple2[String, String]*) = {
-    val item = domain getItem itemName
-    val list = new java.util.ArrayList[ItemAttribute]()
-    val seen = new scala.collection.mutable.HashSet[String]()
-    for (attr <- attrs) {
-      val replace = !seen.contains(attr._1)
-      list.add(new ItemAttribute(attr._1, attr._2, replace))
-      seen += attr._1
+  type KV = Tuple2[String, String]
+
+  def add(domain: SDomain, itemName: String, attrs: KV*): Unit = {
+    _add(domain, itemName, attrs, None)
+  }
+
+  def add(domain: SDomain, itemName: String, cond: Condition, attrs: KV*): Unit = {
+    _add(domain, itemName, attrs, Some(cond))
+  }
+
+  def doesNotExist(attrName: String) = new Condition(attrName, false)
+
+  def hasValue(attrName: String, attrValue: String) = new Condition(attrName, attrValue)
+
+  def assertFails(code: String, message: String, block: => Unit) {
+    try {
+      block
+      fail("Should have failed with " + message)
+    } catch {
+      case e: SDBException => {
+        val error = e.getErrors.get(0)
+        assertEquals(code, error.getCode)
+        assertEquals(message, error.getMessage)
+      }
+      case e: Exception => {
+        assertEquals(message, e.getMessage)
+      }
     }
-    item.putAttributes(list)
+  }
+
+  private def _add(domain: SDomain, itemName: String, attrs: Seq[KV], cond: Option[Condition]): Unit = {
+    val item = domain getItem itemName
+    val seen = new HashSet[String]()
+    val list = attrs.map { attr =>
+      val replace = seen.add(attr._1)
+      new ItemAttribute(attr._1, attr._2, replace)
+    }
+    cond match {
+      case Some(c) => item.putAttributes(list, List(c))
+      case None => item.putAttributes(list)
+    }
   }
 
 }

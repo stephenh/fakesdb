@@ -18,7 +18,7 @@
         <dependency org="servletapi" name="servletapi" rev="2.4" conf="buildtime->default"/>
         <dependency org="org.mortbay.jetty" name="jetty" rev="6.1.19" conf="buildtime->default;test->default;sources->sources"/>
 
-        <dependency org="com.google.code.typica" name="typica" rev="1.5.2a" conf="test->default;sources->sources"/>
+        <dependency org="com.google.code.typica" name="typica" rev="1.7.2" conf="test->default;sources->sources"/>
         <dependency org="junit" name="junit" rev="4.8.2" conf="test->default;sources->sources"/>
         <dependency org="com.novocode" name="junit-interface" rev="0.4.0" conf="test->default;sources->sources"/>
     </dependencies>

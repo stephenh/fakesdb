@@ -6,7 +6,7 @@ import fakesdb._
 class ListDomains(data: Data) extends Action(data) {
 
   def handle(params: Params): NodeSeq = {
-    <ListDomainsResponse xmlns="http://sdb.amazonaws.com/doc/2007-11-07/">
+    <ListDomainsResponse xmlns={namespace}>
       <ListDomainsResult>
       {for (domain <- data.getDomains) yield
         <DomainName>{domain.name}</DomainName>

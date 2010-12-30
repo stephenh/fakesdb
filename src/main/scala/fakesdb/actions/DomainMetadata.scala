@@ -10,7 +10,7 @@ class DomainMetadata(data: Data) extends Action(data) {
     val allItems = data.getDomains.flatMap(_.getItems).toList
     val allAttrs = allItems.flatMap(_.getAttributes.toList)
     val allValues = allAttrs.flatMap(_.getValues.toList)
-    <DomainMetadataResponse xmlns="http://sdb.amazonaws.com/doc/2007-11-07/">
+    <DomainMetadataResponse xmlns={namespace}>
       <DomainMetadataResult>
         <ItemCount>{allItems.size}</ItemCount>
         <ItemNamesSizeBytes>{sum(allItems.map(_.name.size))}</ItemNamesSizeBytes>

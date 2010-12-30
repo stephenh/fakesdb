@@ -11,7 +11,7 @@ class BatchPutAttributes(data: Data) extends Action(data) {
     discoverAttributes(params).foreach((t: (String, String, String, Boolean)) => {
       domain.getOrCreateItem(t._1).put(t._2, t._3, t._4)
     })
-    <BatchPutAttributesResponse xmlns="http://sdb.amazonaws.com/doc/2007-11-07/">
+    <BatchPutAttributesResponse xmlns={namespace}>
       {responseMetaData}
     </BatchPutAttributesResponse>
   }

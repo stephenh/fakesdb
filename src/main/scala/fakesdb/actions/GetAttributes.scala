@@ -14,7 +14,7 @@ class GetAttributes(data: Data) extends Action(data) {
       case None => List()
     }
     val requested = discoverAttributes(params)
-    <GetAttributesResponse xmlns="http://sdb.amazonaws.com/doc/2007-11-07/">
+    <GetAttributesResponse xmlns={namespace}>
       <GetAttributesResult>
         {for (item <- items) yield
           {for (nv <- filter(item, requested)) yield
