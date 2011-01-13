@@ -47,7 +47,9 @@ class SelectParserTest {
     assertEquals(("itema", List(("b", "2"))), results2(0))
   }
 
-  @Test
+  // This behavior is incorrect --
+  // http://docs.amazonwebservices.com/AmazonSimpleDB/latest/DeveloperGuide/index.html?SDB_API_PutAttributes.html
+  ///@Test
   def testFromWithOneAttributeWithMultipleValues(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
     domaina.getOrCreateItem("itema").put("a", "1", false)
@@ -215,12 +217,11 @@ class SelectParserTest {
   @Test
   def testWhereEvery(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
-    domaina.getOrCreateItem("itema").put("a", "1", false)
     domaina.getOrCreateItem("itemb").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
     val results = SelectParser.makeSelectEval("select * from domaina where every(a) = '1'").select(data)
     assertEquals(1, results.size)
-    assertEquals(("itema", List(("a", "1"), ("a", "1"))), results(0))
+    assertEquals(("itema", List(("a", "1"))), results(0))
   }
 
   @Test

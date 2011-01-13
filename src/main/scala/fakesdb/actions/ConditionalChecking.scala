@@ -42,7 +42,7 @@ trait ConditionalChecking {
     None
   }
 
-  class ConditionalCheckFailedException(message: String) extends SDBException("ConditionalCheckFailed", message) {
+  class ConditionalCheckFailedException(message: String) extends SDBException("ConditionalCheckFailed", message, 409) {
     def this(condition: Tuple2[String, Option[String]]) = {
       this("Attribute (%s) value exists".format(condition._1))
     }
@@ -53,6 +53,6 @@ trait ConditionalChecking {
   }
 
   class AttributeDoesNotExistException(name: String)
-    extends SDBException("AttributeDoesNotExist", "Attribute (%s) does not exist".format(name))
+    extends SDBException("AttributeDoesNotExist", "Attribute (%s) does not exist".format(name), 404)
 
 }

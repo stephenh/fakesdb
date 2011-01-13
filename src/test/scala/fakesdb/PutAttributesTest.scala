@@ -45,7 +45,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testLimitInTwoRequests(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "1")
-    assertFails("InternalError", "Too many attributes", {
+    assertFails("NumberItemAttributesExceeded", "Too many attributes in this item", {
       addLots("itema", 255)
     })
     val attrs = domaina.getItem("itema").getAttributes
@@ -54,7 +54,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
 
   @Test
   def testLimitInOneRequest(): Unit = {
-    assertFails("InternalError", "Too many attributes", {
+    assertFails("NumberItemAttributesExceeded", "Too many attributes in this item", {
       addLots("itema", 257)
     })
     val attrs = domaina.getItem("itema").getAttributes
@@ -63,7 +63,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
 
   @Test
   def testFailEmptyAttributeName(): Unit = {
-    assertFails("InternalError", "Empty attribute name", {
+    assertFails("InvalidParameterValue", "Value () for parameter Name is invalid.The empty string is an illegal attribute name", {
       add(domaina, "itema", "" -> "1")
     })
   }

@@ -1,6 +1,7 @@
 package fakesdb
 
 import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.HashSet
 import scala.collection.mutable.LinkedHashMap
 import scala.collection.mutable.LinkedHashSet
 
@@ -30,6 +31,9 @@ class Item(val name: String) {
   def put(name: String, value: String, replace: Boolean): Unit = {
     this.getOrCreateAttribute(name).put(value, replace)
   }
+  def put(name: String, values: Seq[String], replace:Boolean) {
+    this.getOrCreateAttribute(name).put(values, replace)
+  }
   def delete(name: String): Unit = attributes.remove(name)
   def delete(name: String, value: String): Unit = {
     getAttribute(name) match {
@@ -43,16 +47,19 @@ class Item(val name: String) {
 }
 
 class Attribute(val name: String) {
-  private val values = new ListBuffer[String]()
+  private val values = new HashSet[String]()
   def getValues(): Iterator[String] = values.iterator
   def empty(): Boolean = values.size == 0
   def deleteValues(value: String) = {
-    while (values.contains(value)) {
-      values.remove(values.findIndexOf(_ == value))
-    }
+    values.remove(value)
   }
   def put(value: String, replace: Boolean) = {
     if (replace) values.clear
     values += value
+  }
+  
+  def put(_values: Seq[String], replace: Boolean) = {
+    if (replace) values.clear
+    values ++= _values
   }
 }
