@@ -2,7 +2,6 @@ package fakesdb
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.LinkedHashMap
-import scala.collection.mutable.LinkedHashSet
 
 class Data {
   private val domains = new LinkedHashMap[String, Domain]()
