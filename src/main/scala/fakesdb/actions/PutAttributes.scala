@@ -40,11 +40,9 @@ class PutAttributes(data: Data) extends Action(data) with ConditionalChecking {
       if (attrName.isEmpty || attrValue.isEmpty) {
         if (i > 1) stop = true
       } else {
-        if (attrs find (a => a._1 == attrName.get && a._2 == attrValue.get) isEmpty) {
-          val replace = attrReplace.getOrElse("false").toBoolean
-          val attr = attrs.getOrElseUpdate(attrName.get, new AttributeUpdate(replace))
-          attr.values += attrValue.get
-        }
+        val replace = attrReplace.getOrElse("false").toBoolean
+        val attr = attrs.getOrElseUpdate(attrName.get, new AttributeUpdate(replace))
+        attr.values += attrValue.get
       }
       i += 1
     }
