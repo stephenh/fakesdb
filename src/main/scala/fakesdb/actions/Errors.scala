@@ -6,6 +6,9 @@ class SDBException(val httpStatus: Int, val xmlCode: String, val message: String
 class NumberItemAttributesExceededException
   extends SDBException(409, "NumberItemAttributesExceeded", "Too many attributes in this item")
 
+class NumberSubmittedItemsExceeded
+  extends SDBException(409, "NumberSubmittedItemsExceeded", "Too many items in a single call. Up to 25 items per call allowed.")
+
 class EmptyAttributeNameException
   extends SDBException(400, "InvalidParameterValue", "Value () for parameter Name is invalid. The empty string is an illegal attribute name")
 

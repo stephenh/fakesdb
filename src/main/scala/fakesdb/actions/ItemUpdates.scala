@@ -13,13 +13,15 @@ class ItemUpdates extends LinkedHashMap[String, LinkedHashMap[String, AttributeU
   }
 
   def update(domain: Domain): Unit = {
+    if (size > 25) {
+       throw new NumberSubmittedItemsExceeded
+    }
     foreach { case (itemName, attrs) => {
       attrs.foreach { case (attrName, attrUpdate) => {
         domain.getOrCreateItem(itemName).put(attrName, attrUpdate.values, attrUpdate.replace)
       }}
     }}
   }
-
 }
 
 class AttributeUpdate(val replace: Boolean) {
