@@ -2,6 +2,7 @@ package fakesdb
 
 import fakesdb.actions.NumberItemAttributesExceededException
 import fakesdb.actions.EmptyAttributeNameException
+import fakesdb.actions.InvalidParameterValue
 import scala.collection.mutable.LinkedHashSet
 import scala.collection.mutable.LinkedHashMap
 
@@ -9,7 +10,12 @@ class Data {
   private val domains = new LinkedHashMap[String, Domain]()
   def getDomains(): Iterator[Domain] = domains.valuesIterator
   def getDomain(name: String): Option[Domain] = domains.get(name)
-  def getOrCreateDomain(name: String): Domain = domains.getOrElseUpdate(name, new Domain(name))
+  def getOrCreateDomain(name: String): Domain = {
+    if (!name.matches("[a-zA-Z0-9_\\-\\.]{3,255}")) {
+      throw new InvalidParameterValue("Value (\"%s\") for parameter DomainName is invalid.".format(name))
+    }
+    domains.getOrElseUpdate(name, new Domain(name))
+  }
   def deleteDomain(domain: Domain): Unit = domains.remove(domain.name)
   def flush(): Unit = domains.clear
 }

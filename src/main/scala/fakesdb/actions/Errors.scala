@@ -11,3 +11,6 @@ class EmptyAttributeNameException
 
 class MissingItemNameException
   extends SDBException(400, "MissingParameter", "The request must contain the parameter ItemName.")
+
+class InvalidParameterValue(message: String)
+  extends SDBException(400, "InvalidParameterValue", message)
