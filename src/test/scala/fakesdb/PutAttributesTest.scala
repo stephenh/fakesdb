@@ -8,6 +8,8 @@ import com.xerox.amazonws.sdb._
 
 class PutAttributesTest extends AbstractFakeSdbTest {
 
+  private val nameOf1025 = "a" * 1025
+
   @Before
   def createDomain(): Unit = {
     sdb.createDomain("domaina")
@@ -133,6 +135,27 @@ class PutAttributesTest extends AbstractFakeSdbTest {
     add(domaina, "itema", "a" -> "1")
     assertFails("AttributeDoesNotExist", "Attribute (c) does not exist", {
       add(domaina, "itema", hasValue("c", "1"), "b" -> "1")
+    })
+  }
+
+  @Test
+  def testTooLongItemName(): Unit = {
+    assertFails("InvalidParameterValue", "Value (\"%s\") for parameter Name is invalid. Value exceeds maximum length of 1024.".format(nameOf1025), {
+      add(domaina, nameOf1025, "a" -> "1")
+    })
+  }
+
+  @Test
+  def testTooLongAttributeName(): Unit = {
+    assertFails("InvalidParameterValue", "Value (\"%s\") for parameter Name is invalid. Value exceeds maximum length of 1024.".format(nameOf1025), {
+      add(domaina, "i", nameOf1025 -> "1")
+    })
+  }
+
+  @Test
+  def testTooLongValue(): Unit = {
+    assertFails("InvalidParameterValue", "Value (\"%s\") for parameter Value is invalid. Value exceeds maximum length of 1024.".format(nameOf1025), {
+      add(domaina, "i", "a" -> nameOf1025)
     })
   }
 

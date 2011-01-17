@@ -14,3 +14,11 @@ class MissingItemNameException
 
 class InvalidParameterValue(message: String)
   extends SDBException(400, "InvalidParameterValue", message)
+
+object InvalidParameterValue {
+  def failIfOver1024(name: String, value: String): Unit = {
+    if (value.getBytes.size > 1024) {
+      throw new InvalidParameterValue("Value (\"%s\") for parameter %s is invalid. Value exceeds maximum length of 1024.".format(value, name));
+    }
+  }
+}

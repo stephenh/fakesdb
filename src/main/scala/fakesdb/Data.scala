@@ -24,7 +24,10 @@ class Domain(val name: String) {
   private val items = new LinkedHashMap[String, Item]()
   def getItems(): Iterator[Item] = items.valuesIterator
   def getItem(name: String): Option[Item] = items.get(name)
-  def getOrCreateItem(name: String): Item = items.getOrElseUpdate(name, new Item(name))
+  def getOrCreateItem(name: String): Item = {
+    InvalidParameterValue.failIfOver1024("Name", name);
+    items.getOrElseUpdate(name, new Item(name))
+  }
   def deleteIfEmpty(item: Item) = if (!item.getAttributes.hasNext) items.remove(item.name)
   def deleteItem(item: Item) = items.remove(item.name)
 }
@@ -48,6 +51,7 @@ class Item(val name: String) {
     if (name == "") {
       throw new EmptyAttributeNameException
     }
+    InvalidParameterValue.failIfOver1024("Name", name);
     this.getOrCreateAttribute(name).put(values, replace)
   }
   def delete(name: String): Unit = attributes.remove(name)
@@ -72,6 +76,9 @@ class Attribute(val name: String) {
   }
   def put(__values: Seq[String], replace: Boolean) = {
     if (replace) _values.clear
-    _values ++= __values
+    __values.foreach((v) => {
+      InvalidParameterValue.failIfOver1024("Value", v);
+      _values += v
+    })
   }
 }
