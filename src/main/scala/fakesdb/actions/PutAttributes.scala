@@ -38,11 +38,3 @@ class PutAttributes(data: Data) extends Action(data) with ConditionalChecking {
     updates
   }
 }
-
-class NumberItemAttributesExceededException extends SDBException(409, "NumberItemAttributesExceeded", "Too many attributes in this item")
-
-class EmptyAttributeNameException
-  extends SDBException(400, "InvalidParameterValue", "Value () for parameter Name is invalid. The empty string is an illegal attribute name")
-
-class MissingItemNameException
-  extends SDBException(400, "MissingParameter", "The request must contain the parameter ItemName.")
