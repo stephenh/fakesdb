@@ -1,3 +1,3 @@
 package fakesdb.actions
 
-class SDBException(val code: String, val message: String) extends RuntimeException(message)
+class SDBException(val httpCode: Int, val xmlCode: String, val message: String) extends RuntimeException(message)
