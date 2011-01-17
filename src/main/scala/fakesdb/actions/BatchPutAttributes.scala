@@ -9,18 +9,14 @@ class BatchPutAttributes(data: Data) extends Action(data) {
 
   def handle(params: Params): NodeSeq = {
     val domain = parseDomain(params)
-    discoverAttributes(params).foreach { case(item, attrs) => {
-      attrs.foreach { case (name, attr) => {
-        domain.getOrCreateItem(item).put(name, attr.values, attr.replace)
-      }}
-    }}
+    discoverAttributes(params).update(domain)
     <BatchPutAttributesResponse xmlns={namespace}>
       {responseMetaData}
     </BatchPutAttributesResponse>
   }
 
-  private def discoverAttributes(params: Params): LinkedHashMap[String, LinkedHashMap[String, AttributeUpdate]] = {
-    val attrs = new LinkedHashMap[String, LinkedHashMap[String, AttributeUpdate]]
+  private def discoverAttributes(params: Params): ItemUpdates = {
+    val updates = new ItemUpdates
     var i = 0
     var stop = false
     while (!stop) {
@@ -38,15 +34,14 @@ class BatchPutAttributes(data: Data) extends Action(data) {
             if (j > 1) stop2 = true
           } else {
             val replace = attrReplace.getOrElse("false").toBoolean
-            val attr = attrs.getOrElseUpdate(itemName.get, new LinkedHashMap[String, AttributeUpdate]()).getOrElseUpdate(attrName.get, new AttributeUpdate(replace))
-            attr.values += attrValue.get
+            updates.add(itemName.get, attrName.get, attrValue.get, replace)
           }
           j += 1
         }
       }
       i += 1
     }
-    attrs
+    updates
   }
 
 }

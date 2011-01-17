@@ -14,23 +14,15 @@ class PutAttributes(data: Data) extends Action(data) with ConditionalChecking {
 
     checkConditionals(item, params)
 
-    discoverAttributes(params).foreach { case (name, attr) => {
-      if (name == "") {
-        throw new EmptyAttributeNameException
-      } else if (item.getAttributes.size + attr.values.size < 256) {
-        item.put(name, attr.values, attr.replace)
-      } else {
-        throw new NumberItemAttributesExceededException
-      }
-    }}
+    discoverAttributes(itemName, params).update(domain)
 
     <PutAttributesResponse xmlns={namespace}>
       {responseMetaData}
     </PutAttributesResponse>
   }
 
-  private def discoverAttributes(params: Params): LinkedHashMap[String, AttributeUpdate] = {
-    val attrs = new LinkedHashMap[String, AttributeUpdate]
+  private def discoverAttributes(itemName: String, params: Params): ItemUpdates = {
+    val updates = new ItemUpdates
     var i = 0
     var stop = false
     while (!stop) {
@@ -41,13 +33,30 @@ class PutAttributes(data: Data) extends Action(data) with ConditionalChecking {
         if (i > 1) stop = true
       } else {
         val replace = attrReplace.getOrElse("false").toBoolean
-        val attr = attrs.getOrElseUpdate(attrName.get, new AttributeUpdate(replace))
-        attr.values += attrValue.get
+        updates.add(itemName, attrName.get, attrValue.get, replace)
       }
       i += 1
     }
-    attrs
+    updates
   }
+}
+
+/** itemName -> [attrName -> AttributeUpdate] */
+class ItemUpdates extends LinkedHashMap[String, LinkedHashMap[String, AttributeUpdate]] {
+  def add(itemName: String, attrName: String, attrValue: String, replace: Boolean): Unit = {
+    val attrs = getOrElseUpdate(itemName, new LinkedHashMap[String, AttributeUpdate])
+    val attr = attrs.getOrElseUpdate(attrName, new AttributeUpdate(replace))
+    attr.values += attrValue
+  }
+
+  def update(domain: Domain): Unit = {
+    foreach { case (itemName, attrs) => {
+      attrs.foreach { case (attrName, attrUpdate) => {
+        domain.getOrCreateItem(itemName).put(attrName, attrUpdate.values, attrUpdate.replace)
+      }}
+    }}
+  }
+
 }
 
 class AttributeUpdate(val replace: Boolean) {

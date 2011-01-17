@@ -1,5 +1,7 @@
 package fakesdb
 
+import fakesdb.actions.NumberItemAttributesExceededException
+import fakesdb.actions.EmptyAttributeNameException
 import scala.collection.mutable.LinkedHashSet
 import scala.collection.mutable.LinkedHashMap
 
@@ -28,9 +30,15 @@ class Item(val name: String) {
   def getOrCreateAttribute(name: String): Attribute = attributes.getOrElseUpdate(name, new Attribute(name))
   // this put overload is used in a lot of tests
   def put(name: String, value: String, replace: Boolean): Unit = {
-    this.getOrCreateAttribute(name).put(List(value), replace)
+    put(name, List(value), replace)
   }
   def put(name: String, values: Seq[String], replace: Boolean) {
+    if ((attributes.keySet + name).size >= 256) {
+      throw new NumberItemAttributesExceededException
+    }
+    if (name == "") {
+      throw new EmptyAttributeNameException
+    }
     this.getOrCreateAttribute(name).put(values, replace)
   }
   def delete(name: String): Unit = attributes.remove(name)

@@ -49,7 +49,17 @@ class PutAttributesTest extends AbstractFakeSdbTest {
       addLots("itema", 255)
     })
     val attrs = domaina.getItem("itema").getAttributes
+    assertEquals(false, attrs find (_.getName == "attr1") isEmpty)
     assertEquals(true, attrs find (_.getName == "attr255") isEmpty)
+  }
+
+  @Test
+  def testLimitInTwoRequestsWithOverlappingAttributesIsOkay(): Unit = {
+    add(domaina, "itema", "attr255" -> "1")
+    addLots("itema", 255)
+    val attrs = domaina.getItem("itema").getAttributes
+    assertEquals(false, attrs find (_.getName == "attr1") isEmpty)
+    assertEquals(false, attrs find (_.getName == "attr255") isEmpty)
   }
 
   @Test
