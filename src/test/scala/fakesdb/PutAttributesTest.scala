@@ -49,17 +49,31 @@ class PutAttributesTest extends AbstractFakeSdbTest {
       addLots("itema", 255)
     })
     val attrs = domaina.getItem("itema").getAttributes
-    assertEquals(false, attrs find (_.getName == "attr1") isEmpty)
-    assertEquals(true, attrs find (_.getName == "attr255") isEmpty)
+    assertEquals(true, attrs find (_.getName == "attr1") isDefined)
+    assertEquals(true, attrs find (_.getName == "attr254") isDefined)
+    assertEquals(false, attrs find (_.getName == "attr255") isDefined)
   }
 
   @Test
   def testLimitInTwoRequestsWithOverlappingAttributesIsOkay(): Unit = {
-    add(domaina, "itema", "attr255" -> "1")
-    addLots("itema", 255)
+    add(domaina, "itema", "attr256" -> "value256") // value255 matches our new value
+    addLots("itema", 256)
     val attrs = domaina.getItem("itema").getAttributes
-    assertEquals(false, attrs find (_.getName == "attr1") isEmpty)
-    assertEquals(false, attrs find (_.getName == "attr255") isEmpty)
+    assertEquals(256, attrs.size)
+    assertEquals(true, attrs find (_.getName == "attr1") isDefined)
+    assertEquals(true, attrs find (_.getName == "attr256") isDefined)
+  }
+
+  @Test
+  def testLimitInTwoRequestsWithNonOverlappingAttributeValuesFails(): Unit = {
+    add(domaina, "itema", "attr256" -> "valueFoo") // valueFoo does not match our new value
+    assertFails("NumberItemAttributesExceeded", "Too many attributes in this item", {
+      addLots("itema", 256)
+    })
+    val attrs = domaina.getItem("itema").getAttributes
+    assertEquals(256, attrs.size)
+    assertEquals(true, attrs find ((a) => a.getName == "attr1") isDefined)
+    assertEquals(true, attrs find ((a) => a.getName == "attr256" && a.getValue == "value256") isEmpty)
   }
 
   @Test

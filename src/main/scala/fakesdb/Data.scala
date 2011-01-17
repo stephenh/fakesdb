@@ -39,7 +39,10 @@ class Item(val name: String) {
     put(name, List(value), replace)
   }
   def put(name: String, values: Seq[String], replace: Boolean) {
-    if ((attributes.keySet + name).size >= 256) {
+    // the limit is 256 (name,value) unique pairs, so make (name,value) pairs and then combine them 
+    val existingPairs = attributes.toList.flatMap((e) => { e._2.values.map((v) => (e._1, v)) })
+    val newPairs = values.map((v) => (name, v))
+    if ((existingPairs ++ newPairs).toSet.size > 256) {
       throw new NumberItemAttributesExceededException
     }
     if (name == "") {
@@ -60,14 +63,15 @@ class Item(val name: String) {
 }
 
 class Attribute(val name: String) {
-  private val values = new LinkedHashSet[String]()
-  def getValues(): Iterator[String] = values.iterator
+  private val _values = new LinkedHashSet[String]()
+  def values(): Traversable[String] = _values
+  def getValues(): Iterator[String] = _values.iterator
   def empty(): Boolean = values.size == 0
   def deleteValues(value: String) = {
-    values.remove(value)
+    _values.remove(value)
   }
-  def put(_values: Seq[String], replace: Boolean) = {
-    if (replace) values.clear
-    values ++= _values
+  def put(__values: Seq[String], replace: Boolean) = {
+    if (replace) _values.clear
+    _values ++= __values
   }
 }
