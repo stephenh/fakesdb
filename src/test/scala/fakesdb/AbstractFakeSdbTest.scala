@@ -21,7 +21,7 @@ abstract class AbstractFakeSdbTest {
   AbstractFakeSdbTest.jetty
   // typica does not respect ports 9999
   // val sdb = new SimpleDB(System.getenv("AWS_ACCESS_KEY_ID"), System.getenv("AWS_SECRET_ACCESS_KEY"), false)
-  val sdb = new SimpleDB("ignored", "ignored", false, "127.0.0.1")
+  val sdb = new SimpleDB("ignored", "ignored", false, "127.0.0.1", 8080)
   val domaina = sdb.getDomain("domaina")
 
   @Before

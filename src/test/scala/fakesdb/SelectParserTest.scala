@@ -53,7 +53,7 @@ class SelectParserTest {
     domaina.getOrCreateItem("itema").put("a", "1", false)
     val results = SelectParser.makeSelectEval("select a from domaina").select(data)
     assertEquals(1, results.size)
-    assertEquals(("itema", List(("a", "1"), ("a", "1"))), results(0))
+    assertEquals(("itema", List(("a", "1"))), results(0))
   }
 
   @Test
@@ -215,12 +215,11 @@ class SelectParserTest {
   @Test
   def testWhereEvery(): Unit = {
     domaina.getOrCreateItem("itema").put("a", "1", true)
-    domaina.getOrCreateItem("itema").put("a", "1", false)
     domaina.getOrCreateItem("itemb").put("a", "1", true)
     domaina.getOrCreateItem("itemb").put("a", "2", true)
     val results = SelectParser.makeSelectEval("select * from domaina where every(a) = '1'").select(data)
     assertEquals(1, results.size)
-    assertEquals(("itema", List(("a", "1"), ("a", "1"))), results(0))
+    assertEquals(("itema", List(("a", "1"))), results(0))
   }
 
   @Test

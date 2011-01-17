@@ -32,11 +32,10 @@ class FakeSdbServlet extends HttpServlet {
     } catch {
       case e => {
         xml = toXML(e).toString
-        val httpCode = e match {
-          case e: SDBException => e.httpCode
+        response.setStatus(e match {
+          case se: SDBException => se.httpStatus
           case _ => 400
-        }
-        response.setStatus(httpCode)
+        })
       }
     }
 

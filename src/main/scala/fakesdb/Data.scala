@@ -1,6 +1,6 @@
 package fakesdb
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.LinkedHashSet
 import scala.collection.mutable.LinkedHashMap
 
 class Data {
@@ -26,8 +26,12 @@ class Item(val name: String) {
   def getAttributes(): Iterator[Attribute] = attributes.valuesIterator
   def getAttribute(name: String): Option[Attribute] = attributes.get(name)
   def getOrCreateAttribute(name: String): Attribute = attributes.getOrElseUpdate(name, new Attribute(name))
+  // this put overload is used in a lot of tests
   def put(name: String, value: String, replace: Boolean): Unit = {
-    this.getOrCreateAttribute(name).put(value, replace)
+    this.getOrCreateAttribute(name).put(List(value), replace)
+  }
+  def put(name: String, values: Seq[String], replace: Boolean) {
+    this.getOrCreateAttribute(name).put(values, replace)
   }
   def delete(name: String): Unit = attributes.remove(name)
   def delete(name: String, value: String): Unit = {
@@ -42,16 +46,14 @@ class Item(val name: String) {
 }
 
 class Attribute(val name: String) {
-  private val values = new ListBuffer[String]()
+  private val values = new LinkedHashSet[String]()
   def getValues(): Iterator[String] = values.iterator
   def empty(): Boolean = values.size == 0
   def deleteValues(value: String) = {
-    while (values.contains(value)) {
-      values.remove(values.findIndexOf(_ == value))
-    }
+    values.remove(value)
   }
-  def put(value: String, replace: Boolean) = {
+  def put(_values: Seq[String], replace: Boolean) = {
     if (replace) values.clear
-    values += value
+    values ++= _values
   }
 }
