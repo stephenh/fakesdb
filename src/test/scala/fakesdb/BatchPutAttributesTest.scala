@@ -35,4 +35,17 @@ class BatchPutAttributesTest extends AbstractFakeSdbTest {
     assertEquals("3", itembs.get(0).getValue)
   }
 
+  @Test
+  def testPutTooMany(): Unit = {
+    val m = new java.util.HashMap[String, java.util.List[ItemAttribute]]()
+    for (i <- 1.to(26)) {
+      val as = new java.util.ArrayList[ItemAttribute]()
+      as.add(new ItemAttribute("a", "1", true))
+      m.put("item" + i, as)
+    }
+    assertFails("NumberSubmittedItemsExceeded", "Too many items in a single call. Up to 25 items per call allowed.", {
+      domaina.batchPutAttributes(m)
+    })
+  }
+
 }

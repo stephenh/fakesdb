@@ -1,6 +1,7 @@
 package fakesdb.actions
 
 import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.LinkedHashMap
 import scala.xml.NodeSeq
 import fakesdb._
 
@@ -8,16 +9,14 @@ class BatchPutAttributes(data: Data) extends Action(data) {
 
   def handle(params: Params): NodeSeq = {
     val domain = parseDomain(params)
-    discoverAttributes(params).foreach((t: (String, String, String, Boolean)) => {
-      domain.getOrCreateItem(t._1).put(t._2, t._3, t._4)
-    })
+    discoverAttributes(params).update(domain)
     <BatchPutAttributesResponse xmlns={namespace}>
       {responseMetaData}
     </BatchPutAttributesResponse>
   }
 
-  private def discoverAttributes(params: Params): List[(String, String, String, Boolean)] = {
-    val attrs = new ListBuffer[(String, String, String, Boolean)]()
+  private def discoverAttributes(params: Params): ItemUpdates = {
+    val updates = new ItemUpdates
     var i = 0
     var stop = false
     while (!stop) {
@@ -34,14 +33,15 @@ class BatchPutAttributes(data: Data) extends Action(data) {
           if (attrName.isEmpty || attrValue.isEmpty) {
             if (j > 1) stop2 = true
           } else {
-            attrs += ((itemName.get, attrName.get, attrValue.get, attrReplace.getOrElse("false").toBoolean))
+            val replace = attrReplace.getOrElse("false").toBoolean
+            updates.add(itemName.get, attrName.get, attrValue.get, replace)
           }
           j += 1
         }
       }
       i += 1
     }
-    attrs.toList
+    updates
   }
 
 }

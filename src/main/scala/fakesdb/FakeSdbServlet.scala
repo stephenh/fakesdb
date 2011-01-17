@@ -32,28 +32,31 @@ class FakeSdbServlet extends HttpServlet {
     } catch {
       case e => {
         xml = toXML(e).toString
-        response.setStatus(400)
+        response.setStatus(e match {
+          case se: SDBException => se.httpStatus
+          case _ => 400
+        })
       }
     }
 
     response.setContentType("text/xml")
     response.getWriter.write(xml)
   }
-  
+
   private def toXML(t: Throwable) = {
-    val code = t match {
-      case se: SDBException => se.code
+    val xmlCode = t match {
+      case se: SDBException => se.xmlCode
       case _ => "InternalError"
     }
-    
+
     <Response>
-      <Errors><Error><Code>{code}</Code><Message>{t.getMessage}</Message><BoxUsage>0</BoxUsage></Error></Errors>
+      <Errors><Error><Code>{xmlCode}</Code><Message>{t.getMessage}</Message><BoxUsage>0</BoxUsage></Error></Errors>
       <RequestId>0</RequestId>
-    </Response>    
+    </Response>
   }
 
   override def doPost(request: HttpServletRequest, response: HttpServletResponse): Unit = doGet(request, response)
 
   class InvalidActionException(action: String)
-    extends SDBException("InvalidAction", "The action %s is not valid for this web service.".format(action))
+    extends SDBException(400, "InvalidAction", "The action %s is not valid for this web service.".format(action))
 }

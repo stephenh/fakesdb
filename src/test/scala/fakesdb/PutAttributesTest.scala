@@ -8,6 +8,8 @@ import com.xerox.amazonws.sdb._
 
 class PutAttributesTest extends AbstractFakeSdbTest {
 
+  private val nameOf1025 = "a" * 1025
+
   @Before
   def createDomain(): Unit = {
     sdb.createDomain("domaina")
@@ -45,16 +47,40 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testLimitInTwoRequests(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "1")
-    assertFails("InternalError", "Too many attributes", {
+    assertFails("NumberItemAttributesExceeded", "Too many attributes in this item", {
       addLots("itema", 255)
     })
     val attrs = domaina.getItem("itema").getAttributes
-    assertEquals(true, attrs find (_.getName == "attr255") isEmpty)
+    assertEquals(true, attrs find (_.getName == "attr1") isDefined)
+    assertEquals(true, attrs find (_.getName == "attr254") isDefined)
+    assertEquals(false, attrs find (_.getName == "attr255") isDefined)
+  }
+
+  @Test
+  def testLimitInTwoRequestsWithOverlappingAttributesIsOkay(): Unit = {
+    add(domaina, "itema", "attr256" -> "value256") // value255 matches our new value
+    addLots("itema", 256)
+    val attrs = domaina.getItem("itema").getAttributes
+    assertEquals(256, attrs.size)
+    assertEquals(true, attrs find (_.getName == "attr1") isDefined)
+    assertEquals(true, attrs find (_.getName == "attr256") isDefined)
+  }
+
+  @Test
+  def testLimitInTwoRequestsWithNonOverlappingAttributeValuesFails(): Unit = {
+    add(domaina, "itema", "attr256" -> "valueFoo") // valueFoo does not match our new value
+    assertFails("NumberItemAttributesExceeded", "Too many attributes in this item", {
+      addLots("itema", 256)
+    })
+    val attrs = domaina.getItem("itema").getAttributes
+    assertEquals(256, attrs.size)
+    assertEquals(true, attrs find ((a) => a.getName == "attr1") isDefined)
+    assertEquals(true, attrs find ((a) => a.getName == "attr256" && a.getValue == "value256") isEmpty)
   }
 
   @Test
   def testLimitInOneRequest(): Unit = {
-    assertFails("InternalError", "Too many attributes", {
+    assertFails("NumberItemAttributesExceeded", "Too many attributes in this item", {
       addLots("itema", 257)
     })
     val attrs = domaina.getItem("itema").getAttributes
@@ -63,7 +89,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
 
   @Test
   def testFailEmptyAttributeName(): Unit = {
-    assertFails("InternalError", "Empty attribute name", {
+    assertFails("InvalidParameterValue", "Value () for parameter Name is invalid. The empty string is an illegal attribute name", {
       add(domaina, "itema", "" -> "1")
     })
   }
@@ -109,6 +135,27 @@ class PutAttributesTest extends AbstractFakeSdbTest {
     add(domaina, "itema", "a" -> "1")
     assertFails("AttributeDoesNotExist", "Attribute (c) does not exist", {
       add(domaina, "itema", hasValue("c", "1"), "b" -> "1")
+    })
+  }
+
+  @Test
+  def testTooLongItemName(): Unit = {
+    assertFails("InvalidParameterValue", "Value (\"%s\") for parameter Name is invalid. Value exceeds maximum length of 1024.".format(nameOf1025), {
+      add(domaina, nameOf1025, "a" -> "1")
+    })
+  }
+
+  @Test
+  def testTooLongAttributeName(): Unit = {
+    assertFails("InvalidParameterValue", "Value (\"%s\") for parameter Name is invalid. Value exceeds maximum length of 1024.".format(nameOf1025), {
+      add(domaina, "i", nameOf1025 -> "1")
+    })
+  }
+
+  @Test
+  def testTooLongValue(): Unit = {
+    assertFails("InvalidParameterValue", "Value (\"%s\") for parameter Value is invalid. Value exceeds maximum length of 1024.".format(nameOf1025), {
+      add(domaina, "i", "a" -> nameOf1025)
     })
   }
 
