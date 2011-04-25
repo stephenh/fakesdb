@@ -30,10 +30,7 @@ class GetAttributesTest extends AbstractFakeSdbTest {
         "a" -> "1",
         "b" -> "2")
 
-    val get = new java.util.ArrayList[String]()
-    get.add("a")
-
-    val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, "itema")).getAttributes
+    val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, "itema").withAttributeNames("a")).getAttributes
     assertEquals(1, attrs.size)
     assertEquals("a", attrs.get(0).getName)
     assertEquals("1", attrs.get(0).getValue)
