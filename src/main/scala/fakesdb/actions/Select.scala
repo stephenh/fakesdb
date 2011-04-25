@@ -13,7 +13,7 @@ class Select(data: Data) extends Action(data) {
     }
     val items = itemsData._1
     val itemsLength = itemsData._2
-    val newNextToken = if (items.size == 0) List() else List(itemsLength)
+    val newNextToken = if (itemsData._3) List(itemsLength) else List()
     <SelectResponse xmlns={namespace}>
       <SelectResult>
         {for (item <- items) yield

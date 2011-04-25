@@ -6,11 +6,11 @@ import scala.util.parsing.combinator.lexical._
 import scala.util.parsing.input.CharArrayReader.EofCh
 
 case class SelectEval(output: OutputEval, from: String, where: WhereEval, order: OrderEval, limit: LimitEval)  {
-  def select(data: Data, nextToken: Option[Int] = None): (List[(String, List[(String,String)])], Int) = {
+  def select(data: Data, nextToken: Option[Int] = None): (List[(String, List[(String,String)])], Int, Boolean) = {
     val domain = data.getDomain(from).getOrElse(error("Invalid from "+from))
     val drop = new SomeDrop(nextToken getOrElse 0)
-    val items = limit.limit(drop.drop(order.sort(where.filter(domain, domain.getItems.toList))))
-    (output.what(domain, items), items.length)
+    val (items, hasMore) = limit.limit(drop.drop(order.sort(where.filter(domain, domain.getItems.toList))))
+    (output.what(domain, items), items.length, hasMore)
   }
 }
 
@@ -74,13 +74,13 @@ case class SimpleWhereEval(name: String, op: String, value: String) extends Wher
 }
 
 abstract class LimitEval {
-  def limit(items: List[Item]): List[Item]
+  def limit(items: List[Item]): (List[Item], Boolean)
 }
 case class NoopLimit() extends LimitEval {
-  def limit(items: List[Item]) = items
+  def limit(items: List[Item]) = (items, false)
 }
 case class SomeLimit(limit: Int) extends LimitEval {
-  def limit(items: List[Item]) = items take limit
+  def limit(items: List[Item]) = (items take limit, items.size > limit)
 }
 
 case class SomeDrop(count: Int) {

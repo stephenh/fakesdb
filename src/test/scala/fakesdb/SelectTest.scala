@@ -8,22 +8,32 @@ import com.amazonaws.services.simpledb.model._
 class SelectTest extends AbstractFakeSdbTest {
 
   @Before
-  def createDomain(): Unit = {
+  def createDomain() {
     createDomain(domaina)
   }
 
   @Test
-  def testCount(): Unit = {
+  def testCount() {
     val results = select("select count(*) from domaina")
     assertEquals(1, results.getItems.size)
     val item = results.getItems.get(0)
     assertEquals("Domain", item.getName)
     assertEquals("Count", item.getAttributes.get(0).getName)
     assertEquals("0", item.getAttributes.get(0).getValue)
+    assertEquals(null, results.getNextToken)
   }
 
   @Test
-  def testPartialSelect(): Unit = {
+  def testNextTokenIsNotReturnedIfLimitIsMet() {
+    for (i <- 1.to(10)) {
+      add(domaina, i.toString(), "a" -> i.toString())
+    }
+    val results = select("select count(*) from domaina limit 10")
+    assertEquals(null, results.getNextToken)
+  }
+
+  @Test
+  def testPartialSelect() {
     for (i <- 1.to(10)) {
       add(domaina, i.toString(), "a" -> i.toString())
     }
