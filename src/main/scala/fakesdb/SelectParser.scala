@@ -7,9 +7,9 @@ import scala.util.parsing.combinator.lexical._
 import scala.util.parsing.input.CharArrayReader.EofCh
 
 case class SelectEval(output: OutputEval, from: String, where: WhereEval, order: OrderEval, limit: LimitEval)  {
-  def select(data: Data, dropCount: Int = 0): (List[(String, List[(String,String)])], Int) = {
+  def select(data: Data, nextToken: Option[Int] = None): (List[(String, List[(String,String)])], Int) = {
     val domain = data.getDomain(from).getOrElse(error("Invalid from "+from))
-    val drop = new SomeDrop(dropCount)
+    val drop = new SomeDrop(nextToken getOrElse 0)
     val items = limit.limit(drop.drop(order.sort(where.filter(domain, domain.getItems.toList))))
     (output.what(domain, items), items.length)
   }

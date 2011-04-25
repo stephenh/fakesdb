@@ -31,7 +31,7 @@ class SelectTest extends AbstractFakeSdbTest {
     // first query to get a dummy next token
     var results = select("select count(*) from domaina limit 5")
     // second query to start after that
-    results = select("select a from domaina limit 5", "results.getRequestId") // getRequestId isn't available
+    results = select("select a from domaina limit 5", results.getNextToken)
     assertEquals(5, results.getItems.size)
     var i = 6
     results.getItems foreach { item =>
