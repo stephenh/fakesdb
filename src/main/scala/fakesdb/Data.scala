@@ -7,6 +7,12 @@ import scala.collection.mutable.LinkedHashSet
 import scala.collection.mutable.LinkedHashMap
 
 class Data {
+  private val requests = new LinkedHashMap[String, Int]()
+  def getItemsCountForRequest(id: String): Option[Int] = requests.get(id)
+  def putRequestItemsCount(id: String, count: Int): Option[Int] = {
+    requests.put(id, count)
+  }
+
   private val domains = new LinkedHashMap[String, Domain]()
   def getDomains(): Iterator[Domain] = domains.valuesIterator
   def getDomain(name: String): Option[Domain] = domains.get(name)

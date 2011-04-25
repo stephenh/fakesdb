@@ -7,10 +7,11 @@ import scala.util.parsing.combinator.lexical._
 import scala.util.parsing.input.CharArrayReader.EofCh
 
 case class SelectEval(output: OutputEval, from: String, where: WhereEval, order: OrderEval, limit: LimitEval)  {
-  def select(data: Data): List[(String, List[(String,String)])] = {
+  def select(data: Data, dropCount: Int = 0): (List[(String, List[(String,String)])], Int) = {
     val domain = data.getDomain(from).getOrElse(error("Invalid from "+from))
-    val items = limit.limit(order.sort(where.filter(domain, domain.getItems.toList)))
-    output.what(domain, items)
+    val drop = new SomeDrop(dropCount)
+    val items = limit.limit(drop.drop(order.sort(where.filter(domain, domain.getItems.toList))))
+    (output.what(domain, items), items.length)
   }
 }
 
@@ -81,6 +82,10 @@ case class NoopLimit() extends LimitEval {
 }
 case class SomeLimit(limit: Int) extends LimitEval {
   def limit(items: List[Item]) = items take limit
+}
+
+case class SomeDrop(count: Int) {
+  def drop(items: List[Item]) = items drop count
 }
 
 case class EveryEval(name: String, op: String, value: String) extends WhereEval {

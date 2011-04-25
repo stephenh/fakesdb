@@ -6,10 +6,19 @@ import fakesdb._
 class Select(data: Data) extends Action(data) {
 
   override def handle(params: Params): NodeSeq = {
-    val items = params.get("SelectExpression") match {
-      case Some(s) => val se = SelectParser.makeSelectEval(s) ; se.select(data)
+    val drop = params.get("NextToken") match {
+      case Some(s) => data.getItemsCountForRequest(s) match {
+        case Some(v) => v
+        case None => 0
+      }
+      case None => 0
+    }
+    val itemsData = params.get("SelectExpression") match {
+      case Some(s) => val se = SelectParser.makeSelectEval(s) ; se.select(data, drop)
       case None => error("No select expression")
     }
+    data.putRequestItemsCount(requiestId.toString(), drop + itemsData._2)
+    val items = itemsData._1
     <SelectResponse xmlns={namespace}>
       <SelectResult>
         {for (item <- items) yield
