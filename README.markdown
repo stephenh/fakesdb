@@ -28,6 +28,14 @@ Notes
 
 * If you're using the `typica` Java SimpleDB client, versions through 1.6 only use port 80, even when given a non-80 setting. So you'll either have to run `fakesdb` on port 80 or else redirect port 80 traffic to 8080 with a firewall rule.
 
+Changelog
+=========
+
+* 2.2 - 25 Apr 2011
+  * BatchDeleteAttributes support (Alexander Gorkunov)
+  * [Partial Select](http://aws.amazon.com/about-aws/whats-new/2009/02/19/new-features-for-amazon-simpledb/) support (Alexander Gorkunov)
+* Pre-2.2 various releases
+
 Todo
 ====
 

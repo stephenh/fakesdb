@@ -5,6 +5,7 @@ import fakesdb._
 trait ConditionalChecking {
 
   private val expectedNamePattern = """Expected\.(\d+)\.Name""".r
+  private val expectedNamePattern2 = """Expected\.Name""".r
 
   def checkConditionals(item: Item, params: Params) {
     for (condition <- discoverConditional(params)) {
@@ -28,7 +29,19 @@ trait ConditionalChecking {
     }
     val name = params.get(keys.head).get
     keys.head match {
+      case expectedNamePattern2() => {
+        // the aws jdk sends "Expected.Name" with no digit
+        for (v <- params.get("Expected.Exists")) {
+          if (v == "false") {
+            return Some((name, None))
+          }
+        }
+        for (v <- params.get("Expected.Value")) {
+          return Some((name, Some(v)))
+        }
+      }
       case expectedNamePattern(digit) => {
+        // typica sent "Expected.x.Name" with a digit
         for (v <- params.get("Expected.%s.Exists".format(digit))) {
           if (v == "false") {
             return Some((name, None))
