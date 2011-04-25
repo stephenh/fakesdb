@@ -1,7 +1,6 @@
 package fakesdb.actions
 
 import scala.xml.NodeSeq
-import java.util.UUID
 import fakesdb._
 
 abstract class Action(data: Data) {
@@ -9,7 +8,7 @@ abstract class Action(data: Data) {
   def handle(params: Params): NodeSeq
 
   protected def responseMetaData() = {
-    <ResponseMetadata><RequestId>{requiestId}</RequestId><BoxUsage>0</BoxUsage></ResponseMetadata>
+    <ResponseMetadata><RequestId>{requestId}</RequestId><BoxUsage>0</BoxUsage></ResponseMetadata>
   }
 
   protected def parseDomain(params: Params): Domain = {
@@ -17,7 +16,12 @@ abstract class Action(data: Data) {
     return data.getDomain(domainName).getOrElse(error("Invalid domain name "+domainName))
   }
 
-  protected def namespace = "http://sdb.amazonaws.com/doc/2009-04-15/"
-  val requiestId = UUID.randomUUID()
+  val namespace = "http://sdb.amazonaws.com/doc/2009-04-15/"
 
+  val requestId = Action.requestCounter.incrementAndGet()
+
+}
+
+object Action {
+  private val requestCounter = new java.util.concurrent.atomic.AtomicInteger()
 }
