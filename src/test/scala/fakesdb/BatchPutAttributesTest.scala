@@ -1,7 +1,6 @@
 package fakesdb
 
 import org.junit._
-import org.junit.Assert._
 import com.amazonaws.services.simpledb.model._
 
 class BatchPutAttributesTest extends AbstractFakeSdbTest {

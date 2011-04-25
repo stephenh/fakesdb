@@ -1,6 +1,5 @@
 package fakesdb
 
-import scala.collection.mutable.ListBuffer
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.lexical._
