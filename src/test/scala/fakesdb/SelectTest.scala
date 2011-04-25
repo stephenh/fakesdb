@@ -2,22 +2,24 @@ package fakesdb
 
 import org.junit._
 import org.junit.Assert._
-import com.xerox.amazonws.sdb._
 import scala.collection.JavaConversions._
+import com.amazonaws.services.simpledb.model._
 
 class SelectTest extends AbstractFakeSdbTest {
 
   @Before
   def createDomain(): Unit = {
-    sdb.createDomain("domaina")
+    createDomain(domaina)
   }
 
   @Test
   def testCount(): Unit = {
-    val results = domaina.selectItems("select count(*) from domaina", null)
+    val results = select("select count(*) from domaina")
     assertEquals(1, results.getItems.size)
-    assertEquals("Count", results.getItems.get("Domain").get(0).getName)
-    assertEquals("0", results.getItems.get("Domain").get(0).getValue)
+    val item = results.getItems.get(0)
+    assertEquals("Domain", item.getName)
+    assertEquals("Count", item.getAttributes.get(0).getName)
+    assertEquals("0", item.getAttributes.get(0).getValue)
   }
 
   @Test
@@ -25,12 +27,18 @@ class SelectTest extends AbstractFakeSdbTest {
     for (i <- 1.to(10)) {
       add(domaina, i.toString(), "a" -> i.toString())
     }
-    var results = domaina.selectItems("select count(*) from domaina limit 5", null)
-    results = domaina.selectItems("select a from domaina limit 5", results.getRequestId)
+    // http://stackoverflow.com/questions/1795245/how-to-do-paging-with-simpledb/1832779#1832779
+    // first query to get a dummy next token
+    var results = select("select count(*) from domaina limit 5")
+    // second query to start after that
+    results = select("select a from domaina limit 5", "results.getRequestId") // getRequestId isn't available
     assertEquals(5, results.getItems.size)
     var i = 6
-    results.getItems foreach { 
-      case(key, attrs) => assertEquals(i.toString(), attrs.get(0).getValue); i += 1
+    results.getItems foreach { item =>
+      item.getAttributes foreach { attr =>
+        assertEquals(i.toString(), attr.getValue);
+        i += 1
+      }
     }
   }
 }

@@ -2,13 +2,12 @@ package fakesdb
 
 import org.junit._
 import org.junit.Assert._
-import com.xerox.amazonws.sdb.ItemAttribute
 
 class BatchDeleteAttributesTest extends AbstractFakeSdbTest {
 
   @Before
   def createDomain(): Unit = {
-    sdb.createDomain("domaina")
+    createDomain("domaina")
   }
 
   //@Test

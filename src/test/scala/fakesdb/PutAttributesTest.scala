@@ -4,44 +4,34 @@ import org.junit._
 import org.junit.Assert._
 import scala.collection.mutable._
 import scala.collection.JavaConversions._
-import com.xerox.amazonws.sdb._
+import com.amazonaws.services.simpledb.model._
 
 class PutAttributesTest extends AbstractFakeSdbTest {
 
   private val nameOf1025 = "a" * 1025
+  val itema = "itema"
 
   @Before
   def createDomain(): Unit = {
-    sdb.createDomain("domaina")
+    createDomain(domaina)
   }
 
   @Test
   def testPutOne(): Unit = {
-    add(domaina, "itema", "a" -> "1")
-    val attrs = domaina.getItem("itema").getAttributes
-    assertEquals(1, attrs.size)
-    assertEquals("a", attrs.get(0).getName)
-    assertEquals("1", attrs.get(0).getValue)
+    add(domaina, itema, "a" -> "1")
+    assertItems(domaina, itema, "a = 1")
   }
 
   @Test
   def testPutMultipleValues(): Unit = {
-    add(domaina, "itema", "a" -> "1", "a" -> "2")
-    val attrs = domaina.getItem("itema").getAttributes
-    assertEquals(2, attrs.size)
-    assertEquals("a", attrs.get(0).getName)
-    assertEquals("1", attrs.get(0).getValue)
-    assertEquals("a", attrs.get(1).getName)
-    assertEquals("2", attrs.get(1).getValue)
+    add(domaina, itema, "a" -> "1", "a" -> "2")
+    assertItems(domaina, itema, "a = 1", "a = 2")
   }
 
   @Test
   def testPutMultipleValuesWithSameValue(): Unit = {
-    add(domaina, "itema", "a" -> "1", "a" -> "1")
-    val attrs = domaina.getItem("itema").getAttributes
-    assertEquals(1, attrs.size)
-    assertEquals("a", attrs.get(0).getName)
-    assertEquals("1", attrs.get(0).getValue)
+    add(domaina, itema, "a" -> "1", "a" -> "1")
+    assertItems(domaina, itema, "a = 1")
   }
 
   @Test
@@ -50,7 +40,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
     assertFails("NumberItemAttributesExceeded", "Too many attributes in this item", {
       addLots("itema", 255)
     })
-    val attrs = domaina.getItem("itema").getAttributes
+    val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, itema)).getAttributes
     assertEquals(true, attrs find (_.getName == "attr1") isDefined)
     assertEquals(true, attrs find (_.getName == "attr254") isDefined)
     assertEquals(false, attrs find (_.getName == "attr255") isDefined)
@@ -60,7 +50,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   def testLimitInTwoRequestsWithOverlappingAttributesIsOkay(): Unit = {
     add(domaina, "itema", "attr256" -> "value256") // value255 matches our new value
     addLots("itema", 256)
-    val attrs = domaina.getItem("itema").getAttributes
+    val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, itema)).getAttributes
     assertEquals(256, attrs.size)
     assertEquals(true, attrs find (_.getName == "attr1") isDefined)
     assertEquals(true, attrs find (_.getName == "attr256") isDefined)
@@ -72,7 +62,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
     assertFails("NumberItemAttributesExceeded", "Too many attributes in this item", {
       addLots("itema", 256)
     })
-    val attrs = domaina.getItem("itema").getAttributes
+    val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, itema)).getAttributes
     assertEquals(256, attrs.size)
     assertEquals(true, attrs find ((a) => a.getName == "attr1") isDefined)
     assertEquals(true, attrs find ((a) => a.getName == "attr256" && a.getValue == "value256") isEmpty)
@@ -83,7 +73,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
     assertFails("NumberItemAttributesExceeded", "Too many attributes in this item", {
       addLots("itema", 257)
     })
-    val attrs = domaina.getItem("itema").getAttributes
+    val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, itema)).getAttributes
     assertEquals(true, attrs find (_.getName == "attr257") isEmpty)
   }
 
@@ -98,7 +88,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   def testConditionalPutSucceeds(): Unit = {
     add(domaina, "itema", "a" -> "1")
     add(domaina, "itema", hasValue("a", "1"), "b" -> "1")
-    val attrs = domaina.getItem("itema").getAttributes
+    val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, itema)).getAttributes
     assertEquals(2, attrs.size)
     assertEquals("a", attrs.get(0).getName)
     assertEquals("1", attrs.get(0).getValue)
@@ -160,11 +150,11 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   }
 
   private def addLots(itemName: String, number: Int): Unit = {
-    val list = new java.util.ArrayList[ItemAttribute]()
+    val req = new PutAttributesRequest().withDomainName(domaina).withItemName(itemName)
     for (i <- 1.to(number)) {
-      list.add(new ItemAttribute("attr" + i, "value" + i, false))
+      req.withAttributes(new ReplaceableAttribute("attr" + i, "value" + i, false))
     }
-    domaina getItem itemName putAttributes(list)
+    sdb.putAttributes(req)
   }
 
 }

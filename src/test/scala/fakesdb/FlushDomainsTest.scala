@@ -8,23 +8,23 @@ class FlushDomainsTest extends AbstractFakeSdbTest {
   @Test
   def testFoo(): Unit = {
     // Start with a flush
-    sdb.createDomain("_flush")
+    createDomain("_flush")
 
     // Now two real ones
-    sdb.createDomain("one")
-    sdb.createDomain("two")
+    createDomain("one")
+    createDomain("two")
 
     // See that we've got 2
-    val domains = sdb.listDomains.getDomainList
+    val domains = sdb.listDomains.getDomainNames
     assertEquals(2, domains.size)
-    assertEquals("one", domains.get(0).getName)
-    assertEquals("two", domains.get(1).getName)
+    assertEquals("one", domains.get(0))
+    assertEquals("two", domains.get(1))
 
     // Re-flush
-    sdb.createDomain("_flush")
+    createDomain("_flush")
 
     // Now 0
-    assertEquals(0, sdb.listDomains.getDomainList.size)
+    assertEquals(0, sdb.listDomains.getDomainNames.size)
   }
 
 }

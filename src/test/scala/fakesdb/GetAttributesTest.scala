@@ -2,18 +2,19 @@ package fakesdb
 
 import org.junit._
 import org.junit.Assert._
+import com.amazonaws.services.simpledb.model._
 
 class GetAttributesTest extends AbstractFakeSdbTest {
 
   @Before
   def createDomain(): Unit = {
-    sdb.createDomain("domaina")
+    createDomain(domaina)
   }
 
   @Test
   def testGetMultipleValues(): Unit = {
     add(domaina, "itema", "a" -> "1", "a" -> "2", "b" -> "3")
-    val attrs = domaina.getItem("itema").getAttributes
+    val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, "itema")).getAttributes
     assertEquals(3, attrs.size)
     assertEquals("a", attrs.get(0).getName)
     assertEquals("1", attrs.get(0).getValue)
@@ -32,7 +33,7 @@ class GetAttributesTest extends AbstractFakeSdbTest {
     val get = new java.util.ArrayList[String]()
     get.add("a")
 
-    val attrs = domaina.getItem("itema").getAttributes(get)
+    val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, "itema")).getAttributes
     assertEquals(1, attrs.size)
     assertEquals("a", attrs.get(0).getName)
     assertEquals("1", attrs.get(0).getValue)
@@ -40,8 +41,8 @@ class GetAttributesTest extends AbstractFakeSdbTest {
 
   @Test
   def testGetAttributesDoesNotCreateAnItem(): Unit = {
-    val attrs = domaina.getItem("itema").getAttributes
+    val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, "itema")).getAttributes
     assertEquals(0, attrs.size)
-    assertEquals(0, domaina.selectItems("SELECT * FROM domaina", null, true).getItems.size)
+    assertEquals(0, select("SELECT * FROM domaina").getItems.size)
   }
 }

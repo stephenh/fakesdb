@@ -2,13 +2,11 @@ package fakesdb
 
 import org.junit._
 import org.junit.Assert._
-import com.xerox.amazonws.sdb.Condition
-import com.xerox.amazonws.sdb.ItemAttribute
-import com.xerox.amazonws.sdb.SDBException
-import com.xerox.amazonws.sdb.SimpleDB
-import com.xerox.amazonws.sdb.{Domain => SDomain}
+import com.amazonaws.AmazonServiceException
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.services.simpledb.AmazonSimpleDBClient
+import com.amazonaws.services.simpledb.model._
 import scala.collection.JavaConversions._
-import scala.collection.mutable.HashSet
 
 object AbstractFakeSdbTest {
   val jetty = Jetty(8080)
@@ -19,10 +17,10 @@ abstract class AbstractFakeSdbTest {
 
   // start jetty
   AbstractFakeSdbTest.jetty
-  // typica does not respect ports 9999
-  // val sdb = new SimpleDB(System.getenv("AWS_ACCESS_KEY_ID"), System.getenv("AWS_SECRET_ACCESS_KEY"), false)
-  val sdb = new SimpleDB("ignored", "ignored", false, "127.0.0.1", 8080)
-  val domaina = sdb.getDomain("domaina")
+  val sdb = new AmazonSimpleDBClient(new BasicAWSCredentials("ignored", "ignored"))
+  sdb.setEndpoint("http://127.0.0.1:8080")
+
+  val domaina = "domaina"
 
   @Before
   def setUp(): Unit = {
@@ -30,32 +28,31 @@ abstract class AbstractFakeSdbTest {
   }
 
   def flush(): Unit = {
-    sdb.createDomain("_flush")
+    createDomain("_flush")
   }
 
   type KV = Tuple2[String, String]
 
-  def add(domain: SDomain, itemName: String, attrs: KV*): Unit = {
+  def add(domain: String, itemName: String, attrs: KV*): Unit = {
     _add(domain, itemName, attrs, None)
   }
 
-  def add(domain: SDomain, itemName: String, cond: Condition, attrs: KV*): Unit = {
+  def add(domain: String, itemName: String, cond: UpdateCondition, attrs: KV*): Unit = {
     _add(domain, itemName, attrs, Some(cond))
   }
 
-  def doesNotExist(attrName: String) = new Condition(attrName, false)
+  def doesNotExist(attrName: String) = new UpdateCondition(attrName, null, false)
 
-  def hasValue(attrName: String, attrValue: String) = new Condition(attrName, attrValue)
+  def hasValue(attrName: String, attrValue: String) = new UpdateCondition(attrName, attrValue, true)
 
   def assertFails(code: String, message: String, block: => Unit) {
     try {
       block
       fail("Should have failed with " + message)
     } catch {
-      case e: SDBException => {
-        val error = e.getErrors.get(0)
-        assertEquals(code, error.getCode)
-        assertEquals(message, error.getMessage)
+      case e: AmazonServiceException => {
+        assertEquals(code, e.getErrorCode)
+        assertEquals(message, e.getMessage)
       }
       case e: Exception => {
         assertEquals(message, e.getMessage)
@@ -63,17 +60,37 @@ abstract class AbstractFakeSdbTest {
     }
   }
 
-  private def _add(domain: SDomain, itemName: String, attrs: Seq[KV], cond: Option[Condition]): Unit = {
-    val item = domain getItem itemName
-    val seen = new HashSet[String]()
-    val list = attrs.map { attr =>
-      val replace = seen.add(attr._1)
-      new ItemAttribute(attr._1, attr._2, replace)
+  def assertItems(domain: String, item: String, expectedItems: String*) {
+    val result = sdb.getAttributes(new GetAttributesRequest(domain, item))
+    val actualItems = result.getAttributes.map { a => a.getName + " = " + a.getValue }
+    assertEquals(expectedItems.mkString("\n"), actualItems.mkString("\n"))
+  }
+
+  private def _add(domain: String, itemName: String, attrs: Seq[KV], cond: Option[UpdateCondition]): Unit = {
+    val req = new PutAttributesRequest()
+      .withDomainName(domain)
+      .withItemName(itemName)
+    for (a <- attrs) {
+      val replace = asBuffer(req.getAttributes).exists { _.getName == a._1 }
+      req.withAttributes(new ReplaceableAttribute(a._1, a._2, replace))
     }
     cond match {
-      case Some(c) => item.putAttributes(list, List(c))
-      case None => item.putAttributes(list)
+      case Some(c) => req.withExpected(c)
+      case None =>
     }
+    sdb.putAttributes(req)
+  }
+
+  protected def select(query: String): SelectResult = {
+    sdb.select(new SelectRequest(query, true))
+  }
+
+  protected def select(query: String, nextToken: String): SelectResult = {
+    sdb.select(new SelectRequest(query, true).withNextToken(nextToken))
+  }
+
+  protected def createDomain(name: String) {
+    sdb.createDomain(new CreateDomainRequest(name))
   }
 
 }
