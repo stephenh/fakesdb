@@ -31,6 +31,9 @@ Notes
 Changelog
 =========
 
+* 2.4 - 23 Aug 2011
+  * Upgrade to Scala 2.9.0-1 and Jetty 8.0.0.RC0
+  * Make new `fakesdb-testing.jar` which has jetty but not scala-library
 * 2.3 - 23 Aug 2011
   * Remove `Jetty` bootstrap classes from `fakesdb-servlet.jar`
 * 2.2 - 25 Apr 2011
