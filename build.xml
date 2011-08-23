@@ -3,17 +3,23 @@
 <project name="fakesdb">
   <!-- Note sbt is used for everything except the uberjar. -->
 
-  <property name="target" value="target/scala_2.8.1"/>
-  <property name="lib" value="lib_managed/scala_2.8.1"/>
+  <property name="target" value="target/scala_2.9.0-1"/>
+  <property name="lib" value="lib_managed/scala_2.9.0-1"/>
 
   <!-- You must manually run sbt update test package before running this. -->
   <target name="uberjar">
     <jar destfile="target/fakesdb-standalone.jar" manifest="src/main/resources/manifest.mf">
       <fileset dir="${target}/classes" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-6.1.19.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-util-6.1.19.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-util-6.1.19.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/servlet-api-2.5-20081211.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-continuation-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-http-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-io-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-security-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-server-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-servlet-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-util-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-webapp-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-xml-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/servlet-api-3.0.20100224.jar" includes="**/*"/>
       <zipfileset src="${target}/webapp/WEB-INF/lib/scala-library.jar" includes="**/*"/>
     </jar>
   </target>

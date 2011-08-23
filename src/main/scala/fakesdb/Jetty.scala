@@ -1,10 +1,10 @@
 package fakesdb
 
-import org.mortbay.jetty.Connector
-import org.mortbay.jetty.Handler
-import org.mortbay.jetty.Server
-import org.mortbay.jetty.bio.SocketConnector
-import org.mortbay.jetty.servlet.ServletHandler
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.server.bio.SocketConnector
+import org.eclipse.jetty.server.handler.ContextHandlerCollection
+import org.eclipse.jetty.servlet.ServletHandler
+import org.eclipse.jetty.servlet.ServletContextHandler
 
 class Jetty(val server: Server)
 
@@ -15,13 +15,13 @@ object Jetty {
     val connector = new SocketConnector
     connector.setPort(port)
     connector.setMaxIdleTime(60000)
-    connector.setHeaderBufferSize(24 * 1024)
+    connector.setRequestBufferSize(24 * 1024)
 
-    val handler = new ServletHandler
-    handler.addServletWithMapping(classOf[FakeSdbServlet].getName(), "/*")
+    val handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS)
+    handler.addServlet(classOf[FakeSdbServlet].getName(), "/*")
 
     server.setConnectors(Array(connector))
-    server.setHandlers(Array(handler))
+    server.setHandler(handler)
     server.setAttribute("org.mortbay.jetty.Request.maxFormContentSize", 0);
     server.setStopAtShutdown(true);
 
