@@ -25,7 +25,7 @@ trait ConditionalChecking {
       return None
     }
     if (keys.size > 1) {
-      error("Only one condition may be specified")
+      sys.error("Only one condition may be specified")
     }
     val name = params.get(keys.head).get
     keys.head match {

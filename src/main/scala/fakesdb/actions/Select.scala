@@ -9,7 +9,7 @@ class Select(data: Data) extends Action(data) {
     val nextToken = params.get("NextToken") map { _.toInt }
     val itemsData = params.get("SelectExpression") match {
       case Some(s) => val se = SelectParser.makeSelectEval(s) ; se.select(data, nextToken)
-      case None => error("No select expression")
+      case None => sys.error("No select expression")
     }
     val items = itemsData._1
     val itemsLength = itemsData._2

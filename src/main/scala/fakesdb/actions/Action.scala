@@ -12,8 +12,8 @@ abstract class Action(data: Data) {
   }
 
   protected def parseDomain(params: Params): Domain = {
-    val domainName = params.getOrElse("DomainName", error("No domain name"))
-    return data.getDomain(domainName).getOrElse(error("Invalid domain name "+domainName))
+    val domainName = params.getOrElse("DomainName", sys.error("No domain name"))
+    return data.getDomain(domainName).getOrElse(sys.error("Invalid domain name "+domainName))
   }
 
   val namespace = "http://sdb.amazonaws.com/doc/2009-04-15/"
