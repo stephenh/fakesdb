@@ -22,6 +22,20 @@
       <zipfileset src="${lib}/test/servlet-api-3.0.20100224.jar" includes="**/*"/>
       <zipfileset src="${target}/webapp/WEB-INF/lib/scala-library.jar" includes="**/*"/>
     </jar>
+    <!-- same thing as above, but no scala-library -->
+    <jar destfile="target/fakesdb-testing.jar">
+      <fileset dir="${target}/classes" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-continuation-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-http-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-io-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-security-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-server-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-servlet-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-util-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-webapp-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/jetty-xml-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/test/servlet-api-3.0.20100224.jar" includes="**/*"/>
+    </jar>
   </target>
 
   <!-- You must manually run sbt update test package before running this. -->
