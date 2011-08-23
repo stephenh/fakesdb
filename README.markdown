@@ -31,6 +31,8 @@ Notes
 Changelog
 =========
 
+* 2.3 - 23 Aug 2011
+  * Remove `Jetty` bootstrap classes from `fakesdb-servlet.jar`
 * 2.2 - 25 Apr 2011
   * BatchDeleteAttributes support (Alexander Gorkunov)
   * [Partial Select](http://aws.amazon.com/about-aws/whats-new/2009/02/19/new-features-for-amazon-simpledb/) support (Alexander Gorkunov)
