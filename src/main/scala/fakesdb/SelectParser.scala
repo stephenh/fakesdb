@@ -7,7 +7,7 @@ import scala.util.parsing.input.CharArrayReader.EofCh
 
 case class SelectEval(output: OutputEval, from: String, where: WhereEval, order: OrderEval, limit: LimitEval)  {
   def select(data: Data, nextToken: Option[Int] = None): (List[(String, List[(String,String)])], Int, Boolean) = {
-    val domain = data.getDomain(from).getOrElse(error("Invalid from "+from))
+    val domain = data.getDomain(from).getOrElse(sys.error("Invalid from "+from))
     val drop = new SomeDrop(nextToken getOrElse 0)
     val (items, hasMore) = limit.limit(drop.drop(order.sort(where.filter(domain, domain.getItems.toList))))
     (output.what(domain, items), items.length, hasMore)
@@ -102,7 +102,7 @@ case class CompoundWhereEval(sp: WhereEval, op: String, rest: WhereEval) extends
       case "intersection" => sp.filter(domain, items).toList intersect rest.filter(domain, items).toList
       case "and" => sp.filter(domain, items).toList intersect rest.filter(domain, items).toList
       case "or" => sp.filter(domain, items).toList union rest.filter(domain, items).toList
-      case _ => error("Invalid operator "+op)
+      case _ => sys.error("Invalid operator "+op)
     }
   }
 }
@@ -240,8 +240,8 @@ object SelectParser extends StandardTokenParsers {
     val tokens = new lexical.Scanner(input)
     phrase(expr)(tokens) match {
       case Success(selectEval, _) => selectEval
-      case Failure(msg, _) => error(msg)
-      case Error(msg, _) => error(msg)
+      case Failure(msg, _) => sys.error(msg)
+      case Error(msg, _) => sys.error(msg)
     }
   }
 }

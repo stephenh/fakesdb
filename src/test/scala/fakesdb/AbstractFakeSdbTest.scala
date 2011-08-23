@@ -71,7 +71,7 @@ abstract class AbstractFakeSdbTest {
       .withDomainName(domain)
       .withItemName(itemName)
     for (a <- attrs) {
-      val replace = asBuffer(req.getAttributes).exists { _.getName == a._1 }
+      val replace = asScalaBuffer(req.getAttributes).exists { _.getName == a._1 }
       req.withAttributes(new ReplaceableAttribute(a._1, a._2, replace))
     }
     cond match {

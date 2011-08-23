@@ -6,7 +6,7 @@ import fakesdb._
 class CreateDomain(data: Data) extends Action(data) {
 
   def handle(params: Params): NodeSeq = {
-    val domainName = params.getOrElse("DomainName", error("No domain name"))
+    val domainName = params.getOrElse("DomainName", sys.error("No domain name"))
     if (domainName == "_flush") {
       data.flush() // The special one
     } else if (domainName == "_dump") {
