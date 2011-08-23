@@ -21,7 +21,7 @@
   <!-- You must manually run sbt update test package before running this. -->
   <target name="jar">
     <jar destfile="target/fakesdb-servlet.jar">
-      <fileset dir="${target}/classes" includes="**/*"/>
+      <fileset dir="${target}/classes" includes="**/*" excludes="fakesdb/Jetty*"/>
     </jar>
   </target>
 
