@@ -54,18 +54,17 @@ trait ConditionalChecking {
     }
     None
   }
+}
 
-  class ConditionalCheckFailedException(message: String) extends SDBException(409, "ConditionalCheckFailed", message) {
-    def this(condition: Tuple2[String, Option[String]]) = {
-      this("Attribute (%s) value exists".format(condition._1))
-    }
-
-    def this(condition: Tuple2[String, Option[String]], actual: List[String]) = {
-      this("Attribute (%s) value is (%s) but was expected (%s)".format(condition._1, actual, condition._2.get))
-    }
+class ConditionalCheckFailedException(message: String) extends SDBException(409, "ConditionalCheckFailed", message) {
+  def this(condition: Tuple2[String, Option[String]]) = {
+    this("Attribute (%s) value exists".format(condition._1))
   }
 
-  class AttributeDoesNotExistException(name: String)
-    extends SDBException(404, "AttributeDoesNotExist", "Attribute (%s) does not exist".format(name))
-
+  def this(condition: Tuple2[String, Option[String]], actual: List[String]) = {
+    this("Attribute (%s) value is (%s) but was expected (%s)".format(condition._1, actual, condition._2.get))
+  }
 }
+
+class AttributeDoesNotExistException(name: String)
+  extends SDBException(404, "AttributeDoesNotExist", "Attribute (%s) does not exist".format(name))
