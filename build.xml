@@ -8,6 +8,7 @@
 
   <!-- You must manually run sbt update test package before running this. -->
   <target name="uberjar">
+    <!-- fakesdb-standalone has fakesdb+scala+jetty so you can use java -jar fakesdb.jar 8080 -->
     <jar destfile="target/fakesdb-standalone.jar" manifest="src/main/resources/manifest.mf">
       <fileset dir="${target}/classes" includes="**/*"/>
       <zipfileset src="${lib}/test/jetty-continuation-8.0.0.RC0.jar" includes="**/*"/>
@@ -22,7 +23,7 @@
       <zipfileset src="${lib}/test/servlet-api-3.0.20100224.jar" includes="**/*"/>
       <zipfileset src="${target}/webapp/WEB-INF/lib/scala-library.jar" includes="**/*"/>
     </jar>
-    <!-- same thing as above, but no scala-library -->
+    <!-- same thing as above, but no scala, has fakesdb.Jetty for easy embedding -->
     <jar destfile="target/fakesdb-testing.jar">
       <fileset dir="${target}/classes" includes="**/*"/>
       <zipfileset src="${lib}/test/jetty-continuation-8.0.0.RC0.jar" includes="**/*"/>
@@ -40,6 +41,7 @@
 
   <!-- You must manually run sbt update test package before running this. -->
   <target name="jar">
+    <!-- fakesdb-servlet is just fakesdb so you can set it up with your own web.xml. -->
     <jar destfile="target/fakesdb-servlet.jar">
       <fileset dir="${target}/classes" includes="**/*" excludes="fakesdb/Jetty*"/>
     </jar>
