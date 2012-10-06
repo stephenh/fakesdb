@@ -3,43 +3,43 @@
 <project name="fakesdb">
   <!-- Note sbt is used for everything except the uberjar. -->
 
-  <property name="target" value="target/scala_2.9.0-1"/>
-  <property name="lib" value="lib_managed/scala_2.9.0-1"/>
+  <property name="target" value="target"/>
+  <property name="lib" value="lib"/>
 
-  <!-- You must manually run sbt update test package before running this. -->
+  <!-- You must manually run `buildr package` before running this. -->
   <target name="uberjar">
     <!-- fakesdb-standalone has fakesdb+scala+jetty so you can use java -jar fakesdb.jar 8080 -->
     <jar destfile="target/fakesdb-standalone.jar" manifest="src/main/resources/manifest.mf">
       <fileset dir="${target}/classes" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-continuation-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-http-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-io-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-security-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-server-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-servlet-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-util-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-webapp-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-xml-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/servlet-api-3.0.20100224.jar" includes="**/*"/>
-      <zipfileset src="${target}/webapp/WEB-INF/lib/scala-library.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-continuation-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-http-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-io-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-security-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-server-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-servlet-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-util-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-webapp-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-xml-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/servlet-api-3.0.20100224.jar" includes="**/*"/>
+      <zipfileset src="${lib}/scala-library-2.9.0-1.jar" includes="**/*"/>
     </jar>
     <!-- same thing as above, but no scala, has fakesdb.Jetty for easy embedding -->
     <jar destfile="target/fakesdb-testing.jar">
       <fileset dir="${target}/classes" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-continuation-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-http-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-io-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-security-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-server-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-servlet-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-util-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-webapp-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/jetty-xml-8.0.0.RC0.jar" includes="**/*"/>
-      <zipfileset src="${lib}/test/servlet-api-3.0.20100224.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-continuation-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-http-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-io-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-security-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-server-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-servlet-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-util-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-webapp-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/jetty-xml-8.0.0.RC0.jar" includes="**/*"/>
+      <zipfileset src="${lib}/servlet-api-3.0.20100224.jar" includes="**/*"/>
     </jar>
   </target>
 
-  <!-- You must manually run sbt update test package before running this. -->
+  <!-- You must manually run `buildr package` before running this. -->
   <target name="jar">
     <!-- fakesdb-servlet is just fakesdb so you can set it up with your own web.xml. -->
     <jar destfile="target/fakesdb-servlet.jar">
