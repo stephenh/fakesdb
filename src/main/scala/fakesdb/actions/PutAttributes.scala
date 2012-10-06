@@ -20,7 +20,7 @@ class PutAttributes(data: Data) extends Action(data) with ConditionalChecking {
   }
 
   private def discoverAttributes(itemName: String, params: Params): ItemUpdates = {
-    val updates = new ItemUpdates
+    val updates = new ItemUpdates()
     var i = 0
     var stop = false
     while (!stop) {

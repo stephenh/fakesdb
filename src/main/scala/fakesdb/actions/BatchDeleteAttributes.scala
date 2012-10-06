@@ -16,7 +16,7 @@ class BatchDeleteAttributes(data: Data) extends Action(data) {
   }
 
   private def discoverAttributes(params: Params): ItemUpdates = {
-    val updates = new ItemUpdates
+    val updates = new ItemUpdates()
     var i = 0
     var stop = false
     while (!stop) {
