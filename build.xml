@@ -11,6 +11,7 @@
     <!-- fakesdb-standalone has fakesdb+scala+jetty so you can use java -jar fakesdb.jar 8080 -->
     <jar destfile="target/fakesdb-standalone.jar" manifest="src/main/resources/manifest.mf">
       <fileset dir="${target}/classes" includes="**/*"/>
+      <zipfileset src="${lib}/aws-java-sdk-1.3.21.1.jar" includes="**/*"/>
       <zipfileset src="${lib}/jetty-continuation-8.0.0.RC0.jar" includes="**/*"/>
       <zipfileset src="${lib}/jetty-http-8.0.0.RC0.jar" includes="**/*"/>
       <zipfileset src="${lib}/jetty-io-8.0.0.RC0.jar" includes="**/*"/>
@@ -26,6 +27,7 @@
     <!-- same thing as above, but no scala, has fakesdb.Jetty for easy embedding -->
     <jar destfile="target/fakesdb-testing.jar">
       <fileset dir="${target}/classes" includes="**/*"/>
+      <zipfileset src="${lib}/aws-java-sdk-1.3.21.1.jar" includes="**/*"/>
       <zipfileset src="${lib}/jetty-continuation-8.0.0.RC0.jar" includes="**/*"/>
       <zipfileset src="${lib}/jetty-http-8.0.0.RC0.jar" includes="**/*"/>
       <zipfileset src="${lib}/jetty-io-8.0.0.RC0.jar" includes="**/*"/>
