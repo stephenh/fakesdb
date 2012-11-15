@@ -1,5 +1,6 @@
 package fakesdb
 
+import java.io.{PrintWriter, StringWriter}
 import javax.servlet.http._
 import fakesdb.actions._
 
@@ -50,9 +51,13 @@ class FakeSdbServlet extends HttpServlet {
       case _ => "InternalError"
     }
 
+    val stacktrace = new StringWriter()
+    t.printStackTrace(new PrintWriter(stacktrace))
+
     <Response>
-      <Errors><Error><Code>{xmlCode}</Code><Message>{t.getMessage}</Message><BoxUsage>0</BoxUsage></Error></Errors>
+      <Errors><Error><Code>{xmlCode}</Code><Message>{t.getClass.getName}: {t.getMessage}</Message><BoxUsage>0</BoxUsage></Error></Errors>
       <RequestId>0</RequestId>
+      <Stacktrace>{stacktrace.toString}</Stacktrace>
     </Response>
   }
 
