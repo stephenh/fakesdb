@@ -27,8 +27,8 @@ define FakeSDB::fakesdb do
 
   package_with_sources
 
+  file 'target/pom.xml' => task('ivy:makepom')
   package(:jar).pom.tap do |pom|
-    pom.enhance [task('ivy:makepom')]
     pom.from 'target/pom.xml'
   end
 
