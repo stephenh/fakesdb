@@ -37,7 +37,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testLimitInTwoRequests(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "1")
-    assertFails("NumberItemAttributesExceeded", "Too many attributes in this item", {
+    assertFails("NumberItemAttributesExceeded", "NumberItemAttributesExceededException: Too many attributes in this item", {
       addLots("itema", 255)
     })
     val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, itema)).getAttributes
@@ -59,7 +59,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testLimitInTwoRequestsWithNonOverlappingAttributeValuesFails(): Unit = {
     add(domaina, "itema", "attr256" -> "valueFoo") // valueFoo does not match our new value
-    assertFails("NumberItemAttributesExceeded", "Too many attributes in this item", {
+    assertFails("NumberItemAttributesExceeded", "NumberItemAttributesExceededException: Too many attributes in this item", {
       addLots("itema", 256)
     })
     val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, itema)).getAttributes
@@ -70,7 +70,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
 
   @Test
   def testLimitInOneRequest(): Unit = {
-    assertFails("NumberItemAttributesExceeded", "Too many attributes in this item", {
+    assertFails("NumberItemAttributesExceeded", "NumberItemAttributesExceededException: Too many attributes in this item", {
       addLots("itema", 257)
     })
     val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, itema)).getAttributes
@@ -79,7 +79,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
 
   @Test
   def testFailEmptyAttributeName(): Unit = {
-    assertFails("InvalidParameterValue", "Value () for parameter Name is invalid. The empty string is an illegal attribute name", {
+    assertFails("InvalidParameterValue", "EmptyAttributeNameException: Value () for parameter Name is invalid. The empty string is an illegal attribute name", {
       add(domaina, "itema", "" -> "1")
     })
   }
@@ -99,7 +99,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testConditionalPutFailsWithWrongValue(): Unit = {
     add(domaina, "itema", "a" -> "1")
-    assertFails("ConditionalCheckFailed", "Attribute (a) value is (List(1)) but was expected (2)", {
+    assertFails("ConditionalCheckFailed", "ConditionalCheckFailedException: Attribute (a) value is (List(1)) but was expected (2)", {
       add(domaina, "itema", hasValue("a", "2"), "b" -> "1")
     })
   }
@@ -107,7 +107,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testConditionalPutDoesNotExist(): Unit = {
     add(domaina, "itema", "a" -> "1")
-    assertFails("ConditionalCheckFailed", "Attribute (a) value exists", {
+    assertFails("ConditionalCheckFailed", "ConditionalCheckFailedException: Attribute (a) value exists", {
       add(domaina, "itema", doesNotExist("a"), "b" -> "1")
     })
   }
@@ -115,7 +115,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testConditionalPutFailsAgainstMutipleValues(): Unit = {
     add(domaina, "itema", "a" -> "1", "a" -> "2")
-    assertFails("ConditionalCheckFailed", "Attribute (a) value is (List(1, 2)) but was expected (1)", {
+    assertFails("ConditionalCheckFailed", "ConditionalCheckFailedException: Attribute (a) value is (List(1, 2)) but was expected (1)", {
       add(domaina, "itema", hasValue("a", "1"), "b" -> "1")
     })
   }
@@ -123,28 +123,28 @@ class PutAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testConditionalPutFailsAgainstInvalidAttribute(): Unit = {
     add(domaina, "itema", "a" -> "1")
-    assertFails("AttributeDoesNotExist", "Attribute (c) does not exist", {
+    assertFails("AttributeDoesNotExist", "AttributeDoesNotExistException: Attribute (c) does not exist", {
       add(domaina, "itema", hasValue("c", "1"), "b" -> "1")
     })
   }
 
   @Test
   def testTooLongItemName(): Unit = {
-    assertFails("InvalidParameterValue", "Value (\"%s\") for parameter Name is invalid. Value exceeds maximum length of 1024.".format(nameOf1025), {
+    assertFails("InvalidParameterValue", "InvalidParameterValue: Value (\"%s\") for parameter Name is invalid. Value exceeds maximum length of 1024.".format(nameOf1025), {
       add(domaina, nameOf1025, "a" -> "1")
     })
   }
 
   @Test
   def testTooLongAttributeName(): Unit = {
-    assertFails("InvalidParameterValue", "Value (\"%s\") for parameter Name is invalid. Value exceeds maximum length of 1024.".format(nameOf1025), {
+    assertFails("InvalidParameterValue", "InvalidParameterValue: Value (\"%s\") for parameter Name is invalid. Value exceeds maximum length of 1024.".format(nameOf1025), {
       add(domaina, "i", nameOf1025 -> "1")
     })
   }
 
   @Test
   def testTooLongValue(): Unit = {
-    assertFails("InvalidParameterValue", "Value (\"%s\") for parameter Value is invalid. Value exceeds maximum length of 1024.".format(nameOf1025), {
+    assertFails("InvalidParameterValue", "InvalidParameterValue: Value (\"%s\") for parameter Value is invalid. Value exceeds maximum length of 1024.".format(nameOf1025), {
       add(domaina, "i", "a" -> nameOf1025)
     })
   }
