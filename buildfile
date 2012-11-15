@@ -2,7 +2,7 @@ require 'buildr/ivy_extension'
 require 'buildr/scala'
 require 'fakesdb'
 
-VERSION_NUMBER = '2.6-SNAPSHOT'
+VERSION_NUMBER = ENV['version'] || 'SNAPSHOT'
 
 Buildr.settings.build['scala.version'] = '2.9.1'
 
