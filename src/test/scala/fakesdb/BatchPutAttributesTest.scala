@@ -36,7 +36,7 @@ class BatchPutAttributesTest extends AbstractFakeSdbTest {
         new ReplaceableAttribute("a", "1", true)
       ))
     }
-    assertFails("NumberSubmittedItemsExceeded", "Too many items in a single call. Up to 25 items per call allowed.", {
+    assertFails("NumberSubmittedItemsExceeded", "NumberSubmittedItemsExceeded: Too many items in a single call. Up to 25 items per call allowed.", {
       sdb.batchPutAttributes(req)
     })
   }

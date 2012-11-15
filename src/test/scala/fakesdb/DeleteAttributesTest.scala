@@ -53,7 +53,7 @@ class DeleteAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testDeleteConditionalValueFailure(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "2")
-    assertFails("ConditionalCheckFailed", "Attribute (a) value is (List(1)) but was expected (2)", {
+    assertFails("ConditionalCheckFailed", "ConditionalCheckFailedException: Attribute (a) value is (List(1)) but was expected (2)", {
       delete(hasValue("a", "2"), "a")
     })
     assertHas("a = 1", "b = 2")
@@ -62,7 +62,7 @@ class DeleteAttributesTest extends AbstractFakeSdbTest {
   @Test
   def testDeleteConditionalDoesNotExistFailure(): Unit = {
     add(domaina, "itema", "a" -> "1", "b" -> "2")
-    assertFails("ConditionalCheckFailed", "Attribute (b) value exists", {
+    assertFails("ConditionalCheckFailed", "ConditionalCheckFailedException: Attribute (b) value exists", {
       delete(doesNotExist("b"), "a")
     })
     assertHas("a = 1", "b = 2")

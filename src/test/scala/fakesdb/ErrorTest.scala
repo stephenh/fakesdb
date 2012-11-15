@@ -10,7 +10,7 @@ class ErrorTest extends AbstractFakeSdbTest {
       select("SELECT * FROM domaina")
       fail
     } catch {
-      case e => assertEquals("Invalid from domaina", e.getMessage)
+      case e => assertEquals("RuntimeException: Invalid from domaina", e.getMessage)
     }
   }
 }

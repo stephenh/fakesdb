@@ -6,7 +6,7 @@ class CreateDomainTest extends AbstractFakeSdbTest {
 
   @Test
   def invalidDomainName(): Unit = {
-    assertFails("InvalidParameterValue", "Value (\"foo!\") for parameter DomainName is invalid.", {
+    assertFails("InvalidParameterValue", "InvalidParameterValue: Value (\"foo!\") for parameter DomainName is invalid.", {
       createDomain("foo!")
     })
   }

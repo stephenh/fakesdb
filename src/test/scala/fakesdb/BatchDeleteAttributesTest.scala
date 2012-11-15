@@ -30,7 +30,7 @@ class BatchDeleteAttributesTest extends AbstractFakeSdbTest {
     for (i <- 1.to(26)) {
       req.withItems(new DeletableItem().withName("item" + i))
     }
-    assertFails("NumberSubmittedItemsExceeded", "Too many items in a single call. Up to 25 items per call allowed.", {
+    assertFails("NumberSubmittedItemsExceeded", "NumberSubmittedItemsExceeded: Too many items in a single call. Up to 25 items per call allowed.", {
       sdb.batchDeleteAttributes(req)
     })
   }

@@ -55,7 +55,7 @@ class FakeSdbServlet extends HttpServlet {
     t.printStackTrace(new PrintWriter(stacktrace))
 
     <Response>
-      <Errors><Error><Code>{xmlCode}</Code><Message>{t.getClass.getName}: {t.getMessage}</Message><BoxUsage>0</BoxUsage></Error></Errors>
+      <Errors><Error><Code>{xmlCode}</Code><Message>{t.getClass.getSimpleName}: {t.getMessage}</Message><BoxUsage>0</BoxUsage></Error></Errors>
       <RequestId>0</RequestId>
       <Stacktrace>{stacktrace.toString}</Stacktrace>
     </Response>
