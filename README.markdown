@@ -44,10 +44,6 @@ Notes
 
 * To facilitate testing, issuing a `CreateDomain` command with `DomainName=_flush` will reset all of the data
 
-* The `SelectParser` probably has some bugs in it--the grammar is fairly off-the-cuff. `QueryParser` should be pretty solid.
-
-* [Typica](http://code.google.com/p/typica/) is used for unit testing the server's responses
-
 * If you're using the `typica` Java SimpleDB client, versions through 1.6 only use port 80, even when given a non-80 setting. So you'll either have to run `fakesdb` on port 80 or else redirect port 80 traffic to 8080 with a firewall rule.
 
 Changelog
