@@ -9,13 +9,35 @@ The entire REST API (Query, Select, etc.) is implemented in ~750 lines of Scala.
 Install
 =======
 
-The easiest way is to get the `fakesdb-standalone-1.5.jar` from [github](http://github.com/stephenh/fakesdb/downloads) and run:
+You can get fakesdb from:
 
-* `java -jar fakesdb-standalone-1.5.jar`
+1. The [downloads](http://github.com/stephenh/fakesdb/downloads) page
 
-This will start up an embedded instance of Jetty on port 8080. You can pass `-Dport=X` to specify a different port.
+2. The [http://repo.joist.ws](joist.ws) Maven repository, e.g. `com.bizo` + `fakesdb-testing_2.9.1` + `2.6.1` [here](http://repo.joist.ws/com/bizo/fakesdb-testing_2.9.1/)
 
-If you're already running a J2EE container and want to deploy `fakesdb` there, you can download `fakesdb-1.5.war` also from [github](http://github.com/stephenh/fakesdb/downloads).
+There are a few different modules:
+
+* `fakesdb-standalone` has all of the dependencies (including Scala) as an uber-jar for running from the CLI.
+
+   You can run this as:
+
+       `java -jar fakesdb-standalone-1.5.jar`
+
+   And it will start up an embedded instance of Jetty on port 8080. You can pass `-Dport=X` to specify a different port.
+
+* `fakesdb-testing` is the dependencies (without Scala) as an uber-jar  for embedding.
+
+   From within a unit test, you can call:
+
+       fakesdb.Jetty.main(8080)
+
+   To start up fakesdb on port 8080.
+
+* `fakesdb-servlet` is just the fakesdb classes (no dependencies) for running within your own webapp. E.g. add the `fakesdb.FakeSdbServlet` to your own `web.xml` file.
+
+   You could also use this version for `AmazonSimpleDbStub` if you want to do in-memory only testing.
+
+* `fakesdb.war` is (was--it's not being published right now) to drop into your Tomcat/etc.
 
 Notes
 =====
