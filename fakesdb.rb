@@ -17,7 +17,7 @@ module FakeSDB
   # e.g. fakesdb               => "fakesdb_2.9.1"
   #      fakesdb("standalone") => "fakesdb-standalone_2.9.1"
   def fakesdb(suffix = nil)
-    short_scala_version = (scala_version =~ /(.*)(\.RC.*)?/) ? $1 : fail # strip .RC suffix (if any)
+    short_scala_version = (scala_version =~ /^(\d+)\.(\d+).*/) ? "#{$1}.#{$2}" : fail # strip .RC suffix (if any)
     "fakesdb#{suffix ? "-" + suffix : ""}_#{short_scala_version}"
   end
 
