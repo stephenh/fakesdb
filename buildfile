@@ -1,10 +1,11 @@
+Buildr.settings.build['scala.version'] = '2.10.0'
+
 require 'buildr/ivy_extension'
 require 'buildr/scala'
 require 'fakesdb'
 
 VERSION_NUMBER = ENV['version'] || 'SNAPSHOT'
 
-Buildr.settings.build['scala.version'] = '2.9.1'
 
 repositories.remote << "http://mirrors.ibiblio.org/maven2"
 repositories.release_to = 'sftp://joist.ws/var/www/joist.repo'
@@ -16,8 +17,6 @@ define FakeSDB::fakesdb do
   project.version = VERSION_NUMBER
   project.group = 'com.bizo'
   ivy.compile_conf(['servlet', 'war', 'buildtime']).test_conf('test')
-
-  project.scalac_options.incremental = true
 
   test.using :junit
 
@@ -33,7 +32,7 @@ define FakeSDB::fakesdb do
   end
 
   all_in_one_jar :id   => "standalone",
-                 :libs => ["aws-java-sdk", "jetty", "servlet-api", "scala-library"]
+                 :libs => ["aws-java-sdk", "jetty", "servlet-api", "scala-library", "scala-reflect"]
 
   # without scala-library
   all_in_one_jar :id => "testing",
