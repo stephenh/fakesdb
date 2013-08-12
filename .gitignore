@@ -1,3 +1,4 @@
+.cache
 bin
 .manager
 target
@@ -5,3 +6,4 @@ boot
 lib
 lib_managed
 .scala_dependencies
+reports
