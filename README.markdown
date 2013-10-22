@@ -1,4 +1,3 @@
-
 Overview
 ========
 
@@ -29,7 +28,7 @@ There are a few different modules:
 
    From within a unit test, you can call:
 
-       fakesdb.Jetty.main(8080)
+       fakesdb.Jetty.apply(8080)
 
    To start up fakesdb on port 8080.
 
