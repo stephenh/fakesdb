@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <ivy-module version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
-    <info organisation="bizo.com" module="fakesdb" status="integration"/>
+  <info organisation="com.bizo" module="fakesdb_2.10" status="integration" revision="${version}"/>
     <configurations>
         <conf name="war"/>
         <conf name="servlet"/>
