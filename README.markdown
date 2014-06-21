@@ -70,3 +70,8 @@ Todo
 * Loading the SDB URL in a browser (e.g. without a REST action) should display all of the current data
 * [Release It](http://www.pragprog.com/titles/mnee/release-it) talks about having "fake" (better term?) versions of systems like `fakesdb` purposefully lock up, fail, etc., to test how your real application responds--it would be cool to flip `fakesdb` into several error modes either via a web UI or meta-domains (like the current `_flush` domain)
 
+## License
+
+Licensed under the terms of the Apache Software License v2.0. 
+
+http://www.apache.org/licenses/LICENSE-2.0.html
