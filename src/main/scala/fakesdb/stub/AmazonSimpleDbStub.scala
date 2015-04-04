@@ -2,6 +2,7 @@ package fakesdb.stub
 
 import fakesdb.actions.ItemUpdates
 import fakesdb.SelectParser
+import com.amazonaws.regions.Region
 import com.amazonaws.services.simpledb.AmazonSimpleDB
 import com.amazonaws.services.simpledb.model.UpdateCondition
 import com.amazonaws.services.simpledb.model.Attribute
@@ -42,6 +43,10 @@ class AmazonSimpleDbStub extends AmazonSimpleDB {
   }
 
   override def setEndpoint(endpoint: String): Unit = {
+    // noop
+  }
+
+  override def setRegion(region: Region): Unit = {
     // noop
   }
 

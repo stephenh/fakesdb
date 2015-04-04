@@ -41,9 +41,9 @@ class PutAttributesTest extends AbstractFakeSdbTest {
       addLots("itema", 255)
     })
     val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, itema)).getAttributes
-    assertEquals(true, attrs find (_.getName == "attr1") isDefined)
-    assertEquals(true, attrs find (_.getName == "attr254") isDefined)
-    assertEquals(false, attrs find (_.getName == "attr255") isDefined)
+    assertEquals(true, attrs.find { _.getName == "attr1" }.isDefined)
+    assertEquals(true, attrs.find { _.getName == "attr254" }.isDefined)
+    assertEquals(false, attrs.find { _.getName == "attr255" }.isDefined)
   }
 
   @Test
@@ -52,8 +52,8 @@ class PutAttributesTest extends AbstractFakeSdbTest {
     addLots("itema", 256)
     val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, itema)).getAttributes
     assertEquals(256, attrs.size)
-    assertEquals(true, attrs find (_.getName == "attr1") isDefined)
-    assertEquals(true, attrs find (_.getName == "attr256") isDefined)
+    assertEquals(true, attrs.find { _.getName == "attr1" }.isDefined)
+    assertEquals(true, attrs.find { _.getName == "attr256" }.isDefined)
   }
 
   @Test
@@ -64,8 +64,8 @@ class PutAttributesTest extends AbstractFakeSdbTest {
     })
     val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, itema)).getAttributes
     assertEquals(256, attrs.size)
-    assertEquals(true, attrs find ((a) => a.getName == "attr1") isDefined)
-    assertEquals(true, attrs find ((a) => a.getName == "attr256" && a.getValue == "value256") isEmpty)
+    assertEquals(true, attrs.find { (a) => a.getName == "attr1" }.isDefined)
+    assertEquals(true, attrs.find { (a) => a.getName == "attr256" && a.getValue == "value256" }.isEmpty)
   }
 
   @Test
@@ -74,7 +74,7 @@ class PutAttributesTest extends AbstractFakeSdbTest {
       addLots("itema", 257)
     })
     val attrs = sdb.getAttributes(new GetAttributesRequest(domaina, itema)).getAttributes
-    assertEquals(true, attrs find (_.getName == "attr257") isEmpty)
+    assertEquals(true, attrs.find { _.getName == "attr257" }.isEmpty)
   }
 
   @Test
