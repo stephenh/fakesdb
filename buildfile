@@ -6,6 +6,8 @@ require './fakesdb.rb'
 
 VERSION_NUMBER = ENV['version'] || 'SNAPSHOT'
 
+# to resolve the ${version} in the ivy.xml
+Java.java.lang.System.setProperty("version", VERSION_NUMBER)
 
 repositories.remote << "http://mirrors.ibiblio.org/maven2"
 repositories.release_to = 'sftp://joist.ws/var/www/joist.repo'

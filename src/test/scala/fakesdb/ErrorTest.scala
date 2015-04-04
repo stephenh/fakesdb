@@ -6,11 +6,8 @@ import org.junit.Assert._
 class ErrorTest extends AbstractFakeSdbTest {
   @Test
   def testEmptyQuery(): Unit = {
-    try {
+    assertFails("InternalError", "RuntimeException: Invalid from domaina", {
       select("SELECT * FROM domaina")
-      fail
-    } catch {
-      case e: Exception => assertEquals("RuntimeException: Invalid from domaina", e.getMessage)
-    }
+    })
   }
 }

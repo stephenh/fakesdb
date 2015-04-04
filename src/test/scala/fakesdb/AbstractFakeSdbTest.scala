@@ -2,6 +2,7 @@ package fakesdb
 
 import org.junit._
 import org.junit.Assert._
+import org.hamcrest.Matchers._
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient
@@ -17,6 +18,7 @@ abstract class AbstractFakeSdbTest {
 
   // start jetty
   AbstractFakeSdbTest.jetty
+
   val sdb = new AmazonSimpleDBClient(new BasicAWSCredentials("ignored", "ignored"))
   sdb.setEndpoint("http://127.0.0.1:8080")
 
@@ -51,11 +53,11 @@ abstract class AbstractFakeSdbTest {
       fail("Should have failed with " + message)
     } catch {
       case e: AmazonServiceException => {
-        assertEquals(code, e.getErrorCode)
-        assertEquals(message, e.getMessage)
+        assertThat(e.getErrorCode, is(code))
+        assertThat(e.getMessage, startsWith(message))
       }
       case e: Exception => {
-        assertEquals(message, e.getMessage)
+        assertThat(e.getMessage, startsWith(message))
       }
     }
   }
